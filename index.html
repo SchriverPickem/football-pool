@@ -723,9 +723,110 @@ let games =
   || structuredClone(sampleGames);
 
 
-let selections = {};
+/*
+==================================================
+PLAYER STATE
+==================================================
 
-let keyPicks = new Set();
+These are now stored in localStorage so they stay
+intact when switching between the Player and
+Commissioner screens.
+*/
+
+
+let selections =
+  JSON.parse(
+    localStorage.getItem("footballPoolCurrentSelections")
+  ) || {};
+
+
+let savedKeyPicks =
+  JSON.parse(
+    localStorage.getItem("footballPoolCurrentKeyPicks")
+  ) || [];
+
+
+let keyPicks =
+  new Set(savedKeyPicks);
+
+
+/*
+Remove any saved picks that refer to games that
+no longer exist in the current slate.
+*/
+
+function cleanPlayerState() {
+
+  const validGameIds =
+    new Set(
+      games.map(game => game.id)
+    );
+
+
+  Object.keys(selections)
+    .forEach(gameId => {
+
+      if (!validGameIds.has(gameId)) {
+
+        delete selections[gameId];
+
+      }
+
+    });
+
+
+  keyPicks =
+    new Set(
+      [...keyPicks]
+        .filter(gameId =>
+          validGameIds.has(gameId)
+          &&
+          selections[gameId]
+        )
+    );
+
+
+  savePlayerState();
+
+}
+
+
+/*
+Save the player's work-in-progress selections.
+*/
+
+function savePlayerState() {
+
+  localStorage.setItem(
+    "footballPoolCurrentSelections",
+    JSON.stringify(selections)
+  );
+
+
+  localStorage.setItem(
+    "footballPoolCurrentKeyPicks",
+    JSON.stringify([...keyPicks])
+  );
+
+}
+
+
+/*
+Clear work-in-progress picks only when the slate
+actually changes in a way where the old picks
+should no longer be trusted.
+*/
+
+function clearPlayerState() {
+
+  selections = {};
+
+  keyPicks.clear();
+
+  savePlayerState();
+
+}
+
 
 
 function saveGames() {
@@ -738,6 +839,7 @@ function saveGames() {
 }
 
 
+
 function getLeagueGames(league) {
 
   return games.filter(
@@ -745,6 +847,7 @@ function getLeagueGames(league) {
   );
 
 }
+
 
 
 function selectedCount(league) {
@@ -756,6 +859,7 @@ function selectedCount(league) {
     .length;
 
 }
+
 
 
 function renderPlayerGames() {
@@ -773,6 +877,7 @@ function renderPlayerGames() {
   updateSummary();
 
 }
+
 
 
 function renderLeague(league, containerId) {
@@ -846,13 +951,11 @@ function renderLeague(league, containerId) {
 
     favorite.innerHTML = `
 
-      <span class="team-name
-        ${
-          game.homeTeam === "favorite"
-            ? "home"
-            : ""
-        }
-      ">
+      <span class="team-name ${
+        game.homeTeam === "favorite"
+          ? "home"
+          : ""
+      }">
 
         ${game.favorite}
 
@@ -889,13 +992,11 @@ function renderLeague(league, containerId) {
 
     underdog.innerHTML = `
 
-      <span class="team-name
-        ${
-          game.homeTeam === "underdog"
-            ? "home"
-            : ""
-        }
-      ">
+      <span class="team-name ${
+        game.homeTeam === "underdog"
+          ? "home"
+          : ""
+      }">
 
         ${game.underdog}
 
@@ -983,6 +1084,7 @@ function renderLeague(league, containerId) {
 }
 
 
+
 function selectTeam(game, side) {
 
   const league =
@@ -1038,9 +1140,12 @@ function selectTeam(game, side) {
   };
 
 
+  savePlayerState();
+
   renderPlayerGames();
 
 }
+
 
 
 function removeSelection(gameId) {
@@ -1049,9 +1154,12 @@ function removeSelection(gameId) {
 
   keyPicks.delete(gameId);
 
+  savePlayerState();
+
   renderPlayerGames();
 
 }
+
 
 
 function toggleKeyPick(gameId) {
@@ -1088,9 +1196,12 @@ function toggleKeyPick(gameId) {
   }
 
 
+  savePlayerState();
+
   renderPlayerGames();
 
 }
+
 
 
 function mustPickCompleted(league) {
@@ -1113,6 +1224,7 @@ function mustPickCompleted(league) {
   );
 
 }
+
 
 
 function updateSummary() {
@@ -1238,12 +1350,14 @@ function updateSummary() {
 }
 
 
+
 document
   .getElementById("submitButton")
   .addEventListener(
     "click",
     submitPicks
   );
+
 
 
 function submitPicks() {
@@ -1266,6 +1380,14 @@ function submitPicks() {
     "footballPoolPlayerPicks",
     JSON.stringify(finalPicks)
   );
+
+
+  /*
+  Keep the current picks visible even after
+  submission.
+  */
+
+  savePlayerState();
 
 
   console.table(finalPicks);
@@ -1307,9 +1429,8 @@ function renderAdminGames() {
     "nflAdminGames"
   );
 
-  renderPlayerGames();
-
 }
+
 
 
 function renderAdminLeague(
@@ -1466,6 +1587,7 @@ function renderAdminLeague(
 }
 
 
+
 function setMustPick(gameId) {
 
   const target =
@@ -1494,15 +1616,22 @@ function setMustPick(gameId) {
   });
 
 
-  selections = {};
+  /*
+  Changing a Must Pick changes the weekly slate
+  requirements, so clear current player picks,
+  matching the prior behavior.
+  */
 
-  keyPicks.clear();
+  clearPlayerState();
 
   saveGames();
 
   renderAdminGames();
 
+  renderPlayerGames();
+
 }
+
 
 
 function deleteGame(gameId) {
@@ -1520,9 +1649,14 @@ function deleteGame(gameId) {
 
   saveGames();
 
+  savePlayerState();
+
   renderAdminGames();
 
+  renderPlayerGames();
+
 }
+
 
 
 document
@@ -1531,6 +1665,7 @@ document
     "click",
     addGame
   );
+
 
 
 function addGame() {
@@ -1640,9 +1775,20 @@ function addGame() {
   games.push(newGame);
 
 
-  selections = {};
+  /*
+  Preserve existing player selections when simply
+  adding another game to the available slate.
 
-  keyPicks.clear();
+  If the added game becomes the new Must Pick,
+  clear player selections because the required
+  game has changed.
+  */
+
+  if (mustPick) {
+
+    clearPlayerState();
+
+  }
 
 
   saveGames();
@@ -1651,7 +1797,10 @@ function addGame() {
 
   renderAdminGames();
 
+  renderPlayerGames();
+
 }
+
 
 
 function clearGameForm() {
@@ -1683,6 +1832,7 @@ function clearGameForm() {
 }
 
 
+
 document
   .getElementById(
     "resetSampleButton"
@@ -1702,13 +1852,13 @@ document
             sampleGames
           );
 
-        selections = {};
-
-        keyPicks.clear();
+        clearPlayerState();
 
         saveGames();
 
         renderAdminGames();
+
+        renderPlayerGames();
 
       }
 
@@ -1748,6 +1898,7 @@ const commissionerPanel =
   );
 
 
+
 playerTab.addEventListener(
   "click",
   () => {
@@ -1768,10 +1919,17 @@ playerTab.addEventListener(
       "active"
     );
 
+
+    /*
+    Re-render from the saved current state.
+    No selections are cleared here.
+    */
+
     renderPlayerGames();
 
   }
 );
+
 
 
 commissionerTab.addEventListener(
@@ -1794,6 +1952,13 @@ commissionerTab.addEventListener(
       "active"
     );
 
+
+    /*
+    IMPORTANT:
+    Switching to Commissioner does NOT touch
+    selections or Key Picks.
+    */
+
     renderAdminGames();
 
   }
@@ -1807,6 +1972,10 @@ START APP
 ============================================
 */
 
+
+cleanPlayerState();
+
+renderPlayerGames();
 
 renderAdminGames();
 
