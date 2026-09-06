@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Football Pool</title>
 
   <style>
@@ -17,10 +17,20 @@
       color: #1f2937;
     }
 
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
     .page {
-      max-width: 900px;
+      max-width: 1000px;
       margin: 0 auto;
-      padding: 18px;
+      padding: 16px;
     }
 
     .header {
@@ -28,12 +38,11 @@
       color: white;
       padding: 22px;
       border-radius: 14px;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
 
     .header h1 {
-      margin: 0 0 6px;
-      font-size: 28px;
+      margin: 0 0 5px;
     }
 
     .header p {
@@ -41,23 +50,135 @@
       color: #d1d5db;
     }
 
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .tab {
+      flex: 1;
+      border: 0;
+      padding: 13px;
+      border-radius: 10px;
+      background: #d1d5db;
+      font-weight: bold;
+    }
+
+    .tab.active {
+      background: #2563eb;
+      color: white;
+    }
+
+    .panel {
+      display: none;
+    }
+
+    .panel.active {
+      display: block;
+    }
+
     .section {
       background: white;
       border-radius: 14px;
       padding: 18px;
-      margin-bottom: 18px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
     }
 
-    .section h2 {
+    h2,
+    h3 {
       margin-top: 0;
+    }
+
+    .note {
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .commissioner-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    input,
+    select {
+      padding: 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      width: 100%;
+    }
+
+    .primary {
+      border: 0;
+      background: #2563eb;
+      color: white;
+      padding: 12px 16px;
+      border-radius: 9px;
+      font-weight: bold;
+    }
+
+    .secondary {
+      border: 1px solid #cbd5e1;
+      background: white;
+      padding: 9px 12px;
+      border-radius: 8px;
+    }
+
+    .danger {
+      border: 0;
+      background: #dc2626;
+      color: white;
+      padding: 8px 11px;
+      border-radius: 8px;
+    }
+
+    .game-admin {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      border-top: 1px solid #e5e7eb;
+      padding: 12px 0;
+    }
+
+    .game-admin:first-child {
+      border-top: 0;
+    }
+
+    .must-label {
+      display: inline-block;
+      margin-top: 5px;
+      background: #fef3c7;
+      color: #92400e;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: bold;
     }
 
     .game {
       border: 1px solid #d1d5db;
       border-radius: 12px;
-      margin: 12px 0;
       overflow: hidden;
+      margin: 12px 0;
+      background: white;
+    }
+
+    .game.selected-game {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 1px #2563eb;
     }
 
     .game-top {
@@ -81,23 +202,18 @@
     .teams {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
+      align-items: stretch;
       gap: 10px;
-      align-items: center;
       padding: 14px;
     }
 
     .team {
+      background: white;
       border: 2px solid #d1d5db;
       border-radius: 10px;
       padding: 14px 10px;
-      text-align: center;
-      cursor: pointer;
-      background: white;
+      min-height: 78px;
       font-size: 16px;
-    }
-
-    .team:hover {
-      border-color: #6b7280;
     }
 
     .team.selected {
@@ -105,26 +221,38 @@
       background: #eff6ff;
     }
 
+    .team-name {
+      display: block;
+      margin-bottom: 7px;
+    }
+
     .home {
+      font-weight: 900;
+    }
+
+    .spread {
       font-weight: 800;
+      font-size: 17px;
     }
 
     .vs {
+      display: flex;
+      align-items: center;
       color: #9ca3af;
       font-size: 13px;
     }
 
     .key-row {
+      display: flex;
+      justify-content: center;
       padding: 0 14px 14px;
-      text-align: center;
     }
 
     .key-button {
       border: 1px solid #9ca3af;
       background: white;
       border-radius: 999px;
-      padding: 7px 14px;
-      cursor: pointer;
+      padding: 8px 15px;
       font-weight: bold;
     }
 
@@ -134,14 +262,20 @@
       border-color: #111827;
     }
 
+    .key-button:disabled {
+      opacity: .35;
+      cursor: not-allowed;
+    }
+
     .summary {
       position: sticky;
-      bottom: 10px;
+      bottom: 8px;
       background: #111827;
       color: white;
       border-radius: 14px;
-      padding: 14px 18px;
-      margin-top: 20px;
+      padding: 15px 18px;
+      box-shadow: 0 5px 20px rgba(0,0,0,.25);
+      z-index: 10;
     }
 
     .summary-line {
@@ -159,60 +293,96 @@
       padding: 14px;
       border-radius: 10px;
       font-size: 17px;
-      font-weight: 800;
-      cursor: pointer;
+      font-weight: 900;
     }
 
     .submit:disabled {
-      background: #9ca3af;
-      color: white;
+      background: #6b7280;
+      color: #e5e7eb;
       cursor: not-allowed;
     }
 
-    .note {
+    .status {
+      margin-top: 9px;
       font-size: 13px;
-      color: #6b7280;
+      color: #d1d5db;
+      text-align: center;
     }
 
-    @media (max-width: 600px) {
+    .saved-picks {
+      background: #ecfdf5;
+      border: 1px solid #86efac;
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 12px;
+      display: none;
+    }
+
+    @media (max-width: 650px) {
+      .commissioner-form {
+        grid-template-columns: 1fr;
+      }
+
+      .field.full {
+        grid-column: auto;
+      }
+
       .teams {
         grid-template-columns: 1fr;
       }
 
       .vs {
-        text-align: center;
+        justify-content: center;
       }
     }
   </style>
 </head>
 
 <body>
-  <div class="page">
 
-    <div class="header">
-      <h1>Football Pool</h1>
-      <p>Pick 5 College games and 5 NFL games against the spread.</p>
-    </div>
+<div class="page">
+
+  <div class="header">
+    <h1>Football Pool</h1>
+    <p>College & NFL Against-the-Spread Pool</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="playerTab">Make Picks</button>
+    <button class="tab" id="commissionerTab">Commissioner</button>
+  </div>
+
+
+  <!-- PLAYER SCREEN -->
+
+  <div id="playerPanel" class="panel active">
 
     <div class="section">
       <h2>College Football</h2>
+
       <p class="note">
-        Choose one team in each game. The commissioner-designated Must Pick must be included.
+        Pick exactly 5 games against the spread.
+        The College Must Pick is required.
       </p>
 
       <div id="collegeGames"></div>
     </div>
 
+
     <div class="section">
       <h2>NFL</h2>
+
       <p class="note">
-        Choose one team in each game. The commissioner-designated Must Pick must be included.
+        Pick exactly 5 games against the spread.
+        The NFL Must Pick is required.
       </p>
 
       <div id="nflGames"></div>
     </div>
 
+
     <div class="summary">
+
       <div class="summary-line">
         <span>College Picks</span>
         <strong><span id="collegeCount">0</span> / 5</strong>
@@ -231,315 +401,1416 @@
       <button id="submitButton" class="submit" disabled>
         Submit Picks
       </button>
+
+      <div id="statusMessage" class="status">
+        Select 5 College games, 5 NFL games, and 2 Key Picks.
+      </div>
+
+    </div>
+
+    <div id="savedMessage" class="saved-picks">
+      Picks saved successfully.
     </div>
 
   </div>
 
-  <script>
-    /*
-      IMPORTANT RULES
 
-      - 5 College ATS picks
-      - 5 NFL ATS picks
-      - Commissioner chooses:
-          1 College Must Pick
-          1 NFL Must Pick
-      - Players must pick both Must Pick games.
-      - Player chooses exactly 2 Key Picks.
-      - Key Picks may be ANY two of the player's 10 picks:
-          College + College
-          NFL + NFL
-          College + NFL
-      - A Must Pick may also be a Key Pick.
-      - Favorite appears LEFT.
-      - Underdog appears RIGHT.
-      - HOME team is shown in bold.
-    */
+  <!-- COMMISSIONER SCREEN -->
 
-    const collegeGames = [
-      {
-        id: "c1",
-        favorite: "Ohio State",
-        favoriteSpread: "-7.5",
-        favoriteHome: true,
-        underdog: "Michigan",
-        underdogSpread: "+7.5",
-        underdogHome: false,
-        mustPick: true
-      },
-      {
-        id: "c2",
-        favorite: "Georgia",
-        favoriteSpread: "-6.5",
-        favoriteHome: false,
-        underdog: "Florida",
-        underdogSpread: "+6.5",
-        underdogHome: true,
-        mustPick: false
-      },
-      {
-        id: "c3",
-        favorite: "Oregon",
-        favoriteSpread: "-4",
-        favoriteHome: true,
-        underdog: "Washington",
-        underdogSpread: "+4",
-        underdogHome: false,
-        mustPick: false
-      },
-      {
-        id: "c4",
-        favorite: "Texas",
-        favoriteSpread: "-8",
-        favoriteHome: false,
-        underdog: "Oklahoma",
-        underdogSpread: "+8",
-        underdogHome: true,
-        mustPick: false
-      },
-      {
-        id: "c5",
-        favorite: "Notre Dame",
-        favoriteSpread: "-3.5",
-        favoriteHome: true,
-        underdog: "USC",
-        underdogSpread: "+3.5",
-        underdogHome: false,
-        mustPick: false
-      }
-    ];
+  <div id="commissionerPanel" class="panel">
 
-    const nflGames = [
-      {
-        id: "n1",
-        favorite: "Kansas City Chiefs",
-        favoriteSpread: "-4.5",
-        favoriteHome: true,
-        underdog: "Buffalo Bills",
-        underdogSpread: "+4.5",
-        underdogHome: false,
-        mustPick: true
-      },
-      {
-        id: "n2",
-        favorite: "Philadelphia Eagles",
-        favoriteSpread: "-6",
-        favoriteHome: false,
-        underdog: "Dallas Cowboys",
-        underdogSpread: "+6",
-        underdogHome: true,
-        mustPick: false
-      },
-      {
-        id: "n3",
-        favorite: "Baltimore Ravens",
-        favoriteSpread: "-3",
-        favoriteHome: true,
-        underdog: "Cincinnati Bengals",
-        underdogSpread: "+3",
-        underdogHome: false,
-        mustPick: false
-      },
-      {
-        id: "n4",
-        favorite: "San Francisco 49ers",
-        favoriteSpread: "-7",
-        favoriteHome: false,
-        underdog: "Seattle Seahawks",
-        underdogSpread: "+7",
-        underdogHome: true,
-        mustPick: false
-      },
-      {
-        id: "n5",
-        favorite: "Detroit Lions",
-        favoriteSpread: "-2.5",
-        favoriteHome: true,
-        underdog: "Green Bay Packers",
-        underdogSpread: "+2.5",
-        underdogHome: false,
-        mustPick: false
-      }
-    ];
+    <div class="section">
 
-    const selections = {};
-    const keyPicks = new Set();
+      <h2>Weekly Slate Setup</h2>
 
-    function renderGames(games, containerId, league) {
-      const container = document.getElementById(containerId);
+      <p class="note">
+        Add the games you want players to choose from.
+        Mark exactly one College game and one NFL game as the Must Pick.
+      </p>
 
-      games.forEach(game => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "game";
+      <div class="commissioner-form">
 
-        const top = document.createElement("div");
-        top.className = "game-top";
+        <div class="field">
+          <label>League</label>
+          <select id="leagueInput">
+            <option value="College">College</option>
+            <option value="NFL">NFL</option>
+          </select>
+        </div>
 
-        top.innerHTML = `
-          <span>${league}</span>
-          ${game.mustPick ? '<span class="must-pick">MUST PICK</span>' : ''}
-        `;
+        <div class="field">
+          <label>Favorite</label>
+          <input id="favoriteInput" placeholder="Example: Ohio State">
+        </div>
 
-        const teams = document.createElement("div");
-        teams.className = "teams";
+        <div class="field">
+          <label>Favorite Spread</label>
+          <input id="favoriteSpreadInput" placeholder="-7.5">
+        </div>
 
-        const favorite = document.createElement("button");
-        favorite.className = "team";
-        favorite.innerHTML = `
-          <span class="${game.favoriteHome ? "home" : ""}">
-            ${game.favorite}
-          </span>
-          <br>
-          <strong>${game.favoriteSpread}</strong>
-        `;
+        <div class="field">
+          <label>Underdog</label>
+          <input id="underdogInput" placeholder="Example: Michigan">
+        </div>
 
-        const vs = document.createElement("div");
-        vs.className = "vs";
-        vs.textContent = "vs";
+        <div class="field">
+          <label>Underdog Spread</label>
+          <input id="underdogSpreadInput" placeholder="+7.5">
+        </div>
 
-        const underdog = document.createElement("button");
-        underdog.className = "team";
-        underdog.innerHTML = `
-          <span class="${game.underdogHome ? "home" : ""}">
-            ${game.underdog}
-          </span>
-          <br>
-          <strong>${game.underdogSpread}</strong>
-        `;
+        <div class="field">
+          <label>Home Team</label>
 
-        favorite.addEventListener("click", () => {
-          selectTeam(
-            game,
-            favorite,
-            underdog,
-            game.favorite,
-            game.favoriteSpread,
-            league
-          );
-        });
+          <select id="homeTeamInput">
+            <option value="favorite">Favorite</option>
+            <option value="underdog">Underdog</option>
+            <option value="neutral">Neutral Site</option>
+          </select>
+        </div>
 
-        underdog.addEventListener("click", () => {
-          selectTeam(
-            game,
-            underdog,
-            favorite,
-            game.underdog,
-            game.underdogSpread,
-            league
-          );
-        });
+        <div class="field full">
+          <label>
+            <input
+              type="checkbox"
+              id="mustPickInput"
+              style="width:auto;"
+            >
+            Make this league's Must Pick
+          </label>
+        </div>
 
-        teams.appendChild(favorite);
-        teams.appendChild(vs);
-        teams.appendChild(underdog);
+        <div class="field full">
+          <button id="addGameButton" class="primary">
+            Add Game to Slate
+          </button>
+        </div>
 
-        const keyRow = document.createElement("div");
-        keyRow.className = "key-row";
+      </div>
 
-        const keyButton = document.createElement("button");
-        keyButton.className = "key-button";
-        keyButton.textContent = "Make Key Pick";
+    </div>
 
-        keyButton.addEventListener("click", () => {
-          toggleKeyPick(game.id, keyButton);
-        });
 
-        keyRow.appendChild(keyButton);
+    <div class="section">
 
-        wrapper.appendChild(top);
-        wrapper.appendChild(teams);
-        wrapper.appendChild(keyRow);
+      <h3>College Slate</h3>
 
-        container.appendChild(wrapper);
-      });
+      <div id="collegeAdminGames"></div>
+
+    </div>
+
+
+    <div class="section">
+
+      <h3>NFL Slate</h3>
+
+      <div id="nflAdminGames"></div>
+
+    </div>
+
+
+    <div class="section">
+
+      <button id="resetSampleButton" class="secondary">
+        Restore Sample Slate
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+/*
+==================================================
+FOOTBALL POOL RULES
+==================================================
+
+1. Commissioner creates a College slate and NFL slate.
+
+2. Commissioner designates exactly:
+   - 1 College Must Pick
+   - 1 NFL Must Pick
+
+3. Players pick exactly:
+   - 5 College games ATS
+   - 5 NFL games ATS
+
+4. Players MUST make a selection in both
+   commissioner-designated Must Pick games.
+
+5. Players choose exactly TWO Key Picks.
+
+6. Key Picks may be ANY two of the player's
+   10 selections:
+   - both College
+   - both NFL
+   - one College + one NFL
+
+7. A Must Pick may also be a Key Pick.
+
+8. Display:
+   - Favorite LEFT
+   - Underdog RIGHT
+   - Home team BOLD
+*/
+
+
+const sampleGames = [
+
+  {
+    id: "c1",
+    league: "College",
+    favorite: "Ohio State",
+    favoriteSpread: "-7.5",
+    underdog: "Michigan",
+    underdogSpread: "+7.5",
+    homeTeam: "favorite",
+    mustPick: true
+  },
+
+  {
+    id: "c2",
+    league: "College",
+    favorite: "Georgia",
+    favoriteSpread: "-5.5",
+    underdog: "Florida",
+    underdogSpread: "+5.5",
+    homeTeam: "underdog",
+    mustPick: false
+  },
+
+  {
+    id: "c3",
+    league: "College",
+    favorite: "Oregon",
+    favoriteSpread: "-4",
+    underdog: "Washington",
+    underdogSpread: "+4",
+    homeTeam: "favorite",
+    mustPick: false
+  },
+
+  {
+    id: "c4",
+    league: "College",
+    favorite: "Texas",
+    favoriteSpread: "-8",
+    underdog: "Oklahoma",
+    underdogSpread: "+8",
+    homeTeam: "underdog",
+    mustPick: false
+  },
+
+  {
+    id: "c5",
+    league: "College",
+    favorite: "Notre Dame",
+    favoriteSpread: "-3",
+    underdog: "USC",
+    underdogSpread: "+3",
+    homeTeam: "favorite",
+    mustPick: false
+  },
+
+  {
+    id: "c6",
+    league: "College",
+    favorite: "Alabama",
+    favoriteSpread: "-6.5",
+    underdog: "LSU",
+    underdogSpread: "+6.5",
+    homeTeam: "underdog",
+    mustPick: false
+  },
+
+  {
+    id: "c7",
+    league: "College",
+    favorite: "Penn State",
+    favoriteSpread: "-4.5",
+    underdog: "Wisconsin",
+    underdogSpread: "+4.5",
+    homeTeam: "favorite",
+    mustPick: false
+  },
+
+
+  {
+    id: "n1",
+    league: "NFL",
+    favorite: "Kansas City Chiefs",
+    favoriteSpread: "-4.5",
+    underdog: "Buffalo Bills",
+    underdogSpread: "+4.5",
+    homeTeam: "favorite",
+    mustPick: true
+  },
+
+  {
+    id: "n2",
+    league: "NFL",
+    favorite: "Philadelphia Eagles",
+    favoriteSpread: "-6",
+    underdog: "Dallas Cowboys",
+    underdogSpread: "+6",
+    homeTeam: "underdog",
+    mustPick: false
+  },
+
+  {
+    id: "n3",
+    league: "NFL",
+    favorite: "Baltimore Ravens",
+    favoriteSpread: "-3",
+    underdog: "Cincinnati Bengals",
+    underdogSpread: "+3",
+    homeTeam: "favorite",
+    mustPick: false
+  },
+
+  {
+    id: "n4",
+    league: "NFL",
+    favorite: "San Francisco 49ers",
+    favoriteSpread: "-7",
+    underdog: "Seattle Seahawks",
+    underdogSpread: "+7",
+    homeTeam: "underdog",
+    mustPick: false
+  },
+
+  {
+    id: "n5",
+    league: "NFL",
+    favorite: "Detroit Lions",
+    favoriteSpread: "-2.5",
+    underdog: "Green Bay Packers",
+    underdogSpread: "+2.5",
+    homeTeam: "favorite",
+    mustPick: false
+  },
+
+  {
+    id: "n6",
+    league: "NFL",
+    favorite: "Los Angeles Rams",
+    favoriteSpread: "-3.5",
+    underdog: "Arizona Cardinals",
+    underdogSpread: "+3.5",
+    homeTeam: "favorite",
+    mustPick: false
+  },
+
+  {
+    id: "n7",
+    league: "NFL",
+    favorite: "Houston Texans",
+    favoriteSpread: "-5",
+    underdog: "Indianapolis Colts",
+    underdogSpread: "+5",
+    homeTeam: "underdog",
+    mustPick: false
+  }
+
+];
+
+
+let games =
+  JSON.parse(localStorage.getItem("footballPoolGames"))
+  || structuredClone(sampleGames);
+
+
+let selections = {};
+
+let keyPicks = new Set();
+
+
+function saveGames() {
+
+  localStorage.setItem(
+    "footballPoolGames",
+    JSON.stringify(games)
+  );
+
+}
+
+
+function getLeagueGames(league) {
+
+  return games.filter(
+    game => game.league === league
+  );
+
+}
+
+
+function selectedCount(league) {
+
+  return Object.values(selections)
+    .filter(selection =>
+      selection.league === league
+    )
+    .length;
+
+}
+
+
+function renderPlayerGames() {
+
+  renderLeague(
+    "College",
+    "collegeGames"
+  );
+
+  renderLeague(
+    "NFL",
+    "nflGames"
+  );
+
+  updateSummary();
+
+}
+
+
+function renderLeague(league, containerId) {
+
+  const container =
+    document.getElementById(containerId);
+
+  container.innerHTML = "";
+
+  const leagueGames =
+    getLeagueGames(league);
+
+
+  if (!leagueGames.length) {
+
+    container.innerHTML =
+      '<p class="note">No games have been added yet.</p>';
+
+    return;
+
+  }
+
+
+  leagueGames.forEach(game => {
+
+    const wrapper =
+      document.createElement("div");
+
+    wrapper.className = "game";
+
+    if (selections[game.id]) {
+      wrapper.classList.add("selected-game");
     }
 
-    function selectTeam(game, selectedButton, otherButton, team, spread, league) {
-      selections[game.id] = {
-        gameId: game.id,
-        team,
-        spread,
-        league,
-        mustPick: game.mustPick
-      };
 
-      selectedButton.classList.add("selected");
-      otherButton.classList.remove("selected");
+    const top =
+      document.createElement("div");
 
-      updateSummary();
+    top.className = "game-top";
+
+    top.innerHTML = `
+      <span>${league}</span>
+
+      ${
+        game.mustPick
+          ? '<span class="must-pick">MUST PICK</span>'
+          : ''
+      }
+    `;
+
+
+    const teams =
+      document.createElement("div");
+
+    teams.className = "teams";
+
+
+    const favorite =
+      document.createElement("button");
+
+    favorite.className = "team";
+
+
+    if (
+      selections[game.id]?.side
+      === "favorite"
+    ) {
+      favorite.classList.add("selected");
     }
 
-    function toggleKeyPick(gameId, button) {
-      if (!selections[gameId]) {
-        alert("Choose a team in this game before making it a Key Pick.");
-        return;
-      }
 
-      if (keyPicks.has(gameId)) {
-        keyPicks.delete(gameId);
-        button.classList.remove("active");
-        button.textContent = "Make Key Pick";
-      } else {
-        if (keyPicks.size >= 2) {
-          alert("You may choose exactly two Key Picks.");
-          return;
+    favorite.innerHTML = `
+
+      <span class="team-name
+        ${
+          game.homeTeam === "favorite"
+            ? "home"
+            : ""
         }
+      ">
 
-        keyPicks.add(gameId);
-        button.classList.add("active");
-        button.textContent = "KEY PICK ✓";
-      }
+        ${game.favorite}
 
-      updateSummary();
+      </span>
+
+      <span class="spread">
+        ${game.favoriteSpread}
+      </span>
+
+    `;
+
+
+    const vs =
+      document.createElement("div");
+
+    vs.className = "vs";
+
+    vs.textContent = "vs";
+
+
+    const underdog =
+      document.createElement("button");
+
+    underdog.className = "team";
+
+
+    if (
+      selections[game.id]?.side
+      === "underdog"
+    ) {
+      underdog.classList.add("selected");
     }
 
-    function updateSummary() {
-      const collegeCount = Object.values(selections)
-        .filter(pick => pick.league === "College").length;
 
-      const nflCount = Object.values(selections)
-        .filter(pick => pick.league === "NFL").length;
+    underdog.innerHTML = `
 
-      document.getElementById("collegeCount").textContent = collegeCount;
-      document.getElementById("nflCount").textContent = nflCount;
-      document.getElementById("keyCount").textContent = keyPicks.size;
+      <span class="team-name
+        ${
+          game.homeTeam === "underdog"
+            ? "home"
+            : ""
+        }
+      ">
 
-      const collegeMustPickDone = collegeGames
-        .filter(game => game.mustPick)
-        .every(game => selections[game.id]);
+        ${game.underdog}
 
-      const nflMustPickDone = nflGames
-        .filter(game => game.mustPick)
-        .every(game => selections[game.id]);
+      </span>
 
-      const ready =
-        collegeCount === 5 &&
-        nflCount === 5 &&
-        keyPicks.size === 2 &&
-        collegeMustPickDone &&
-        nflMustPickDone;
+      <span class="spread">
+        ${game.underdogSpread}
+      </span>
 
-      document.getElementById("submitButton").disabled = !ready;
+    `;
+
+
+    favorite.addEventListener(
+      "click",
+      () => selectTeam(game, "favorite")
+    );
+
+
+    underdog.addEventListener(
+      "click",
+      () => selectTeam(game, "underdog")
+    );
+
+
+    teams.appendChild(favorite);
+
+    teams.appendChild(vs);
+
+    teams.appendChild(underdog);
+
+
+    const keyRow =
+      document.createElement("div");
+
+    keyRow.className = "key-row";
+
+
+    const keyButton =
+      document.createElement("button");
+
+    keyButton.className = "key-button";
+
+
+    const selected =
+      Boolean(selections[game.id]);
+
+
+    keyButton.disabled =
+      !selected;
+
+
+    if (keyPicks.has(game.id)) {
+
+      keyButton.classList.add("active");
+
+      keyButton.textContent =
+        "KEY PICK ✓";
+
+    } else {
+
+      keyButton.textContent =
+        "Make Key Pick";
+
     }
 
-    document.getElementById("submitButton").addEventListener("click", () => {
-      const finalPicks = Object.values(selections).map(pick => ({
-        ...pick,
-        keyPick: keyPicks.has(pick.gameId)
-      }));
 
-      console.log(finalPicks);
+    keyButton.addEventListener(
+      "click",
+      () => toggleKeyPick(game.id)
+    );
+
+
+    keyRow.appendChild(keyButton);
+
+    wrapper.appendChild(top);
+
+    wrapper.appendChild(teams);
+
+    wrapper.appendChild(keyRow);
+
+    container.appendChild(wrapper);
+
+  });
+
+}
+
+
+function selectTeam(game, side) {
+
+  const league =
+    game.league;
+
+
+  const alreadySelected =
+    Boolean(selections[game.id]);
+
+
+  if (
+    !alreadySelected
+    &&
+    selectedCount(league) >= 5
+  ) {
+
+    alert(
+      `You already have 5 ${league} picks. ` +
+      `Remove one before choosing another.`
+    );
+
+    return;
+
+  }
+
+
+  const team =
+    side === "favorite"
+      ? game.favorite
+      : game.underdog;
+
+
+  const spread =
+    side === "favorite"
+      ? game.favoriteSpread
+      : game.underdogSpread;
+
+
+  selections[game.id] = {
+
+    gameId: game.id,
+
+    league,
+
+    side,
+
+    team,
+
+    spread,
+
+    mustPick: game.mustPick
+
+  };
+
+
+  renderPlayerGames();
+
+}
+
+
+function removeSelection(gameId) {
+
+  delete selections[gameId];
+
+  keyPicks.delete(gameId);
+
+  renderPlayerGames();
+
+}
+
+
+function toggleKeyPick(gameId) {
+
+  if (!selections[gameId]) {
+
+    alert(
+      "You must select a team in this game first."
+    );
+
+    return;
+
+  }
+
+
+  if (keyPicks.has(gameId)) {
+
+    keyPicks.delete(gameId);
+
+  } else {
+
+    if (keyPicks.size >= 2) {
 
       alert(
-        "Picks are valid! Next we will connect this screen to player accounts and save the picks."
+        "You may choose exactly two Key Picks."
       );
+
+      return;
+
+    }
+
+    keyPicks.add(gameId);
+
+  }
+
+
+  renderPlayerGames();
+
+}
+
+
+function mustPickCompleted(league) {
+
+  const mustGame =
+    games.find(game =>
+      game.league === league
+      &&
+      game.mustPick
+    );
+
+
+  if (!mustGame) {
+    return false;
+  }
+
+
+  return Boolean(
+    selections[mustGame.id]
+  );
+
+}
+
+
+function updateSummary() {
+
+  const collegeCount =
+    selectedCount("College");
+
+  const nflCount =
+    selectedCount("NFL");
+
+
+  document.getElementById(
+    "collegeCount"
+  ).textContent =
+    collegeCount;
+
+
+  document.getElementById(
+    "nflCount"
+  ).textContent =
+    nflCount;
+
+
+  document.getElementById(
+    "keyCount"
+  ).textContent =
+    keyPicks.size;
+
+
+  const collegeMust =
+    mustPickCompleted("College");
+
+  const nflMust =
+    mustPickCompleted("NFL");
+
+
+  const ready =
+    collegeCount === 5
+    &&
+    nflCount === 5
+    &&
+    collegeMust
+    &&
+    nflMust
+    &&
+    keyPicks.size === 2;
+
+
+  document.getElementById(
+    "submitButton"
+  ).disabled =
+    !ready;
+
+
+  const status =
+    document.getElementById(
+      "statusMessage"
+    );
+
+
+  if (ready) {
+
+    status.textContent =
+      "Your picks are complete and ready to submit.";
+
+    return;
+
+  }
+
+
+  const problems = [];
+
+
+  if (collegeCount !== 5) {
+
+    problems.push(
+      `${collegeCount}/5 College`
+    );
+
+  }
+
+
+  if (nflCount !== 5) {
+
+    problems.push(
+      `${nflCount}/5 NFL`
+    );
+
+  }
+
+
+  if (!collegeMust) {
+
+    problems.push(
+      "College Must Pick"
+    );
+
+  }
+
+
+  if (!nflMust) {
+
+    problems.push(
+      "NFL Must Pick"
+    );
+
+  }
+
+
+  if (keyPicks.size !== 2) {
+
+    problems.push(
+      `${keyPicks.size}/2 Key Picks`
+    );
+
+  }
+
+
+  status.textContent =
+    "Still needed: "
+    + problems.join(" • ");
+
+}
+
+
+document
+  .getElementById("submitButton")
+  .addEventListener(
+    "click",
+    submitPicks
+  );
+
+
+function submitPicks() {
+
+  const finalPicks =
+    Object.values(selections)
+      .map(selection => ({
+
+        ...selection,
+
+        keyPick:
+          keyPicks.has(
+            selection.gameId
+          )
+
+      }));
+
+
+  localStorage.setItem(
+    "footballPoolPlayerPicks",
+    JSON.stringify(finalPicks)
+  );
+
+
+  console.table(finalPicks);
+
+
+  const savedMessage =
+    document.getElementById(
+      "savedMessage"
+    );
+
+
+  savedMessage.style.display =
+    "block";
+
+
+  savedMessage.textContent =
+    "Picks saved successfully on this device.";
+
+}
+
+
+
+/*
+============================================
+COMMISSIONER
+============================================
+*/
+
+
+function renderAdminGames() {
+
+  renderAdminLeague(
+    "College",
+    "collegeAdminGames"
+  );
+
+  renderAdminLeague(
+    "NFL",
+    "nflAdminGames"
+  );
+
+  renderPlayerGames();
+
+}
+
+
+function renderAdminLeague(
+  league,
+  containerId
+) {
+
+  const container =
+    document.getElementById(
+      containerId
+    );
+
+
+  container.innerHTML = "";
+
+
+  const leagueGames =
+    getLeagueGames(league);
+
+
+  if (!leagueGames.length) {
+
+    container.innerHTML =
+      '<p class="note">No games entered.</p>';
+
+    return;
+
+  }
+
+
+  leagueGames.forEach(game => {
+
+    const row =
+      document.createElement("div");
+
+    row.className =
+      "game-admin";
+
+
+    const info =
+      document.createElement("div");
+
+
+    const favoriteHome =
+      game.homeTeam === "favorite";
+
+
+    const underdogHome =
+      game.homeTeam === "underdog";
+
+
+    info.innerHTML = `
+
+      <div>
+
+        <span class="${
+          favoriteHome
+            ? "home"
+            : ""
+        }">
+
+          ${game.favorite}
+
+        </span>
+
+        ${game.favoriteSpread}
+
+        &nbsp; vs &nbsp;
+
+        <span class="${
+          underdogHome
+            ? "home"
+            : ""
+        }">
+
+          ${game.underdog}
+
+        </span>
+
+        ${game.underdogSpread}
+
+      </div>
+
+      ${
+        game.mustPick
+          ? '<span class="must-label">MUST PICK</span>'
+          : ''
+      }
+
+    `;
+
+
+    const buttons =
+      document.createElement("div");
+
+
+    const mustButton =
+      document.createElement("button");
+
+    mustButton.className =
+      "secondary";
+
+
+    mustButton.textContent =
+      game.mustPick
+        ? "Must Pick ✓"
+        : "Make Must Pick";
+
+
+    mustButton.addEventListener(
+      "click",
+      () =>
+        setMustPick(game.id)
+    );
+
+
+    const deleteButton =
+      document.createElement("button");
+
+    deleteButton.className =
+      "danger";
+
+    deleteButton.style.marginLeft =
+      "6px";
+
+    deleteButton.textContent =
+      "Delete";
+
+
+    deleteButton.addEventListener(
+      "click",
+      () =>
+        deleteGame(game.id)
+    );
+
+
+    buttons.appendChild(
+      mustButton
+    );
+
+    buttons.appendChild(
+      deleteButton
+    );
+
+
+    row.appendChild(info);
+
+    row.appendChild(buttons);
+
+    container.appendChild(row);
+
+  });
+
+}
+
+
+function setMustPick(gameId) {
+
+  const target =
+    games.find(
+      game => game.id === gameId
+    );
+
+
+  if (!target) {
+    return;
+  }
+
+
+  games.forEach(game => {
+
+    if (
+      game.league
+      === target.league
+    ) {
+
+      game.mustPick =
+        game.id === gameId;
+
+    }
+
+  });
+
+
+  selections = {};
+
+  keyPicks.clear();
+
+  saveGames();
+
+  renderAdminGames();
+
+}
+
+
+function deleteGame(gameId) {
+
+  games =
+    games.filter(
+      game =>
+        game.id !== gameId
+    );
+
+
+  delete selections[gameId];
+
+  keyPicks.delete(gameId);
+
+  saveGames();
+
+  renderAdminGames();
+
+}
+
+
+document
+  .getElementById("addGameButton")
+  .addEventListener(
+    "click",
+    addGame
+  );
+
+
+function addGame() {
+
+  const league =
+    document.getElementById(
+      "leagueInput"
+    ).value;
+
+
+  const favorite =
+    document.getElementById(
+      "favoriteInput"
+    ).value.trim();
+
+
+  const favoriteSpread =
+    document.getElementById(
+      "favoriteSpreadInput"
+    ).value.trim();
+
+
+  const underdog =
+    document.getElementById(
+      "underdogInput"
+    ).value.trim();
+
+
+  const underdogSpread =
+    document.getElementById(
+      "underdogSpreadInput"
+    ).value.trim();
+
+
+  const homeTeam =
+    document.getElementById(
+      "homeTeamInput"
+    ).value;
+
+
+  const mustPick =
+    document.getElementById(
+      "mustPickInput"
+    ).checked;
+
+
+  if (
+    !favorite
+    ||
+    !favoriteSpread
+    ||
+    !underdog
+    ||
+    !underdogSpread
+  ) {
+
+    alert(
+      "Please enter both teams and both spreads."
+    );
+
+    return;
+
+  }
+
+
+  if (mustPick) {
+
+    games.forEach(game => {
+
+      if (game.league === league) {
+
+        game.mustPick = false;
+
+      }
+
     });
 
-    renderGames(collegeGames, "collegeGames", "College");
-    renderGames(nflGames, "nflGames", "NFL");
+  }
 
-    updateSummary();
-  </script>
+
+  const newGame = {
+
+    id:
+      league.toLowerCase()
+      +
+      "-"
+      +
+      Date.now(),
+
+    league,
+
+    favorite,
+
+    favoriteSpread,
+
+    underdog,
+
+    underdogSpread,
+
+    homeTeam,
+
+    mustPick
+
+  };
+
+
+  games.push(newGame);
+
+
+  selections = {};
+
+  keyPicks.clear();
+
+
+  saveGames();
+
+  clearGameForm();
+
+  renderAdminGames();
+
+}
+
+
+function clearGameForm() {
+
+  document.getElementById(
+    "favoriteInput"
+  ).value = "";
+
+
+  document.getElementById(
+    "favoriteSpreadInput"
+  ).value = "";
+
+
+  document.getElementById(
+    "underdogInput"
+  ).value = "";
+
+
+  document.getElementById(
+    "underdogSpreadInput"
+  ).value = "";
+
+
+  document.getElementById(
+    "mustPickInput"
+  ).checked = false;
+
+}
+
+
+document
+  .getElementById(
+    "resetSampleButton"
+  )
+  .addEventListener(
+    "click",
+    () => {
+
+      if (
+        confirm(
+          "Restore the sample slate?"
+        )
+      ) {
+
+        games =
+          structuredClone(
+            sampleGames
+          );
+
+        selections = {};
+
+        keyPicks.clear();
+
+        saveGames();
+
+        renderAdminGames();
+
+      }
+
+    }
+  );
+
+
+
+/*
+============================================
+TABS
+============================================
+*/
+
+
+const playerTab =
+  document.getElementById(
+    "playerTab"
+  );
+
+
+const commissionerTab =
+  document.getElementById(
+    "commissionerTab"
+  );
+
+
+const playerPanel =
+  document.getElementById(
+    "playerPanel"
+  );
+
+
+const commissionerPanel =
+  document.getElementById(
+    "commissionerPanel"
+  );
+
+
+playerTab.addEventListener(
+  "click",
+  () => {
+
+    playerTab.classList.add(
+      "active"
+    );
+
+    commissionerTab.classList.remove(
+      "active"
+    );
+
+    playerPanel.classList.add(
+      "active"
+    );
+
+    commissionerPanel.classList.remove(
+      "active"
+    );
+
+    renderPlayerGames();
+
+  }
+);
+
+
+commissionerTab.addEventListener(
+  "click",
+  () => {
+
+    commissionerTab.classList.add(
+      "active"
+    );
+
+    playerTab.classList.remove(
+      "active"
+    );
+
+    commissionerPanel.classList.add(
+      "active"
+    );
+
+    playerPanel.classList.remove(
+      "active"
+    );
+
+    renderAdminGames();
+
+  }
+);
+
+
+
+/*
+============================================
+START APP
+============================================
+*/
+
+
+renderAdminGames();
+
+</script>
 
 </body>
 </html>
