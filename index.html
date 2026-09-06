@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Football Pool</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f3f4f6;
+      color: #1f2937;
+    }
+
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .header {
+      background: #111827;
+      color: white;
+      padding: 22px;
+      border-radius: 14px;
+      margin-bottom: 18px;
+    }
+
+    .header h1 {
+      margin: 0 0 6px;
+      font-size: 28px;
+    }
+
+    .header p {
+      margin: 0;
+      color: #d1d5db;
+    }
+
+    .section {
+      background: white;
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .section h2 {
+      margin-top: 0;
+    }
+
+    .game {
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      margin: 12px 0;
+      overflow: hidden;
+    }
+
+    .game-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f9fafb;
+      padding: 9px 12px;
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    .must-pick {
+      background: #fef3c7;
+      color: #92400e;
+      font-weight: bold;
+      padding: 4px 8px;
+      border-radius: 999px;
+    }
+
+    .teams {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 10px;
+      align-items: center;
+      padding: 14px;
+    }
+
+    .team {
+      border: 2px solid #d1d5db;
+      border-radius: 10px;
+      padding: 14px 10px;
+      text-align: center;
+      cursor: pointer;
+      background: white;
+      font-size: 16px;
+    }
+
+    .team:hover {
+      border-color: #6b7280;
+    }
+
+    .team.selected {
+      border-color: #2563eb;
+      background: #eff6ff;
+    }
+
+    .home {
+      font-weight: 800;
+    }
+
+    .vs {
+      color: #9ca3af;
+      font-size: 13px;
+    }
+
+    .key-row {
+      padding: 0 14px 14px;
+      text-align: center;
+    }
+
+    .key-button {
+      border: 1px solid #9ca3af;
+      background: white;
+      border-radius: 999px;
+      padding: 7px 14px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .key-button.active {
+      background: #111827;
+      color: white;
+      border-color: #111827;
+    }
+
+    .summary {
+      position: sticky;
+      bottom: 10px;
+      background: #111827;
+      color: white;
+      border-radius: 14px;
+      padding: 14px 18px;
+      margin-top: 20px;
+    }
+
+    .summary-line {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+    }
+
+    .submit {
+      width: 100%;
+      margin-top: 12px;
+      border: 0;
+      background: #22c55e;
+      color: #052e16;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 17px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .submit:disabled {
+      background: #9ca3af;
+      color: white;
+      cursor: not-allowed;
+    }
+
+    .note {
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    @media (max-width: 600px) {
+      .teams {
+        grid-template-columns: 1fr;
+      }
+
+      .vs {
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+
+    <div class="header">
+      <h1>Football Pool</h1>
+      <p>Pick 5 College games and 5 NFL games against the spread.</p>
+    </div>
+
+    <div class="section">
+      <h2>College Football</h2>
+      <p class="note">
+        Choose one team in each game. The commissioner-designated Must Pick must be included.
+      </p>
+
+      <div id="collegeGames"></div>
+    </div>
+
+    <div class="section">
+      <h2>NFL</h2>
+      <p class="note">
+        Choose one team in each game. The commissioner-designated Must Pick must be included.
+      </p>
+
+      <div id="nflGames"></div>
+    </div>
+
+    <div class="summary">
+      <div class="summary-line">
+        <span>College Picks</span>
+        <strong><span id="collegeCount">0</span> / 5</strong>
+      </div>
+
+      <div class="summary-line">
+        <span>NFL Picks</span>
+        <strong><span id="nflCount">0</span> / 5</strong>
+      </div>
+
+      <div class="summary-line">
+        <span>Key Picks</span>
+        <strong><span id="keyCount">0</span> / 2</strong>
+      </div>
+
+      <button id="submitButton" class="submit" disabled>
+        Submit Picks
+      </button>
+    </div>
+
+  </div>
+
+  <script>
+    /*
+      IMPORTANT RULES
+
+      - 5 College ATS picks
+      - 5 NFL ATS picks
+      - Commissioner chooses:
+          1 College Must Pick
+          1 NFL Must Pick
+      - Players must pick both Must Pick games.
+      - Player chooses exactly 2 Key Picks.
+      - Key Picks may be ANY two of the player's 10 picks:
+          College + College
+          NFL + NFL
+          College + NFL
+      - A Must Pick may also be a Key Pick.
+      - Favorite appears LEFT.
+      - Underdog appears RIGHT.
+      - HOME team is shown in bold.
+    */
+
+    const collegeGames = [
+      {
+        id: "c1",
+        favorite: "Ohio State",
+        favoriteSpread: "-7.5",
+        favoriteHome: true,
+        underdog: "Michigan",
+        underdogSpread: "+7.5",
+        underdogHome: false,
+        mustPick: true
+      },
+      {
+        id: "c2",
+        favorite: "Georgia",
+        favoriteSpread: "-6.5",
+        favoriteHome: false,
+        underdog: "Florida",
+        underdogSpread: "+6.5",
+        underdogHome: true,
+        mustPick: false
+      },
+      {
+        id: "c3",
+        favorite: "Oregon",
+        favoriteSpread: "-4",
+        favoriteHome: true,
+        underdog: "Washington",
+        underdogSpread: "+4",
+        underdogHome: false,
+        mustPick: false
+      },
+      {
+        id: "c4",
+        favorite: "Texas",
+        favoriteSpread: "-8",
+        favoriteHome: false,
+        underdog: "Oklahoma",
+        underdogSpread: "+8",
+        underdogHome: true,
+        mustPick: false
+      },
+      {
+        id: "c5",
+        favorite: "Notre Dame",
+        favoriteSpread: "-3.5",
+        favoriteHome: true,
+        underdog: "USC",
+        underdogSpread: "+3.5",
+        underdogHome: false,
+        mustPick: false
+      }
+    ];
+
+    const nflGames = [
+      {
+        id: "n1",
+        favorite: "Kansas City Chiefs",
+        favoriteSpread: "-4.5",
+        favoriteHome: true,
+        underdog: "Buffalo Bills",
+        underdogSpread: "+4.5",
+        underdogHome: false,
+        mustPick: true
+      },
+      {
+        id: "n2",
+        favorite: "Philadelphia Eagles",
+        favoriteSpread: "-6",
+        favoriteHome: false,
+        underdog: "Dallas Cowboys",
+        underdogSpread: "+6",
+        underdogHome: true,
+        mustPick: false
+      },
+      {
+        id: "n3",
+        favorite: "Baltimore Ravens",
+        favoriteSpread: "-3",
+        favoriteHome: true,
+        underdog: "Cincinnati Bengals",
+        underdogSpread: "+3",
+        underdogHome: false,
+        mustPick: false
+      },
+      {
+        id: "n4",
+        favorite: "San Francisco 49ers",
+        favoriteSpread: "-7",
+        favoriteHome: false,
+        underdog: "Seattle Seahawks",
+        underdogSpread: "+7",
+        underdogHome: true,
+        mustPick: false
+      },
+      {
+        id: "n5",
+        favorite: "Detroit Lions",
+        favoriteSpread: "-2.5",
+        favoriteHome: true,
+        underdog: "Green Bay Packers",
+        underdogSpread: "+2.5",
+        underdogHome: false,
+        mustPick: false
+      }
+    ];
+
+    const selections = {};
+    const keyPicks = new Set();
+
+    function renderGames(games, containerId, league) {
+      const container = document.getElementById(containerId);
+
+      games.forEach(game => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "game";
+
+        const top = document.createElement("div");
+        top.className = "game-top";
+
+        top.innerHTML = `
+          <span>${league}</span>
+          ${game.mustPick ? '<span class="must-pick">MUST PICK</span>' : ''}
+        `;
+
+        const teams = document.createElement("div");
+        teams.className = "teams";
+
+        const favorite = document.createElement("button");
+        favorite.className = "team";
+        favorite.innerHTML = `
+          <span class="${game.favoriteHome ? "home" : ""}">
+            ${game.favorite}
+          </span>
+          <br>
+          <strong>${game.favoriteSpread}</strong>
+        `;
+
+        const vs = document.createElement("div");
+        vs.className = "vs";
+        vs.textContent = "vs";
+
+        const underdog = document.createElement("button");
+        underdog.className = "team";
+        underdog.innerHTML = `
+          <span class="${game.underdogHome ? "home" : ""}">
+            ${game.underdog}
+          </span>
+          <br>
+          <strong>${game.underdogSpread}</strong>
+        `;
+
+        favorite.addEventListener("click", () => {
+          selectTeam(
+            game,
+            favorite,
+            underdog,
+            game.favorite,
+            game.favoriteSpread,
+            league
+          );
+        });
+
+        underdog.addEventListener("click", () => {
+          selectTeam(
+            game,
+            underdog,
+            favorite,
+            game.underdog,
+            game.underdogSpread,
+            league
+          );
+        });
+
+        teams.appendChild(favorite);
+        teams.appendChild(vs);
+        teams.appendChild(underdog);
+
+        const keyRow = document.createElement("div");
+        keyRow.className = "key-row";
+
+        const keyButton = document.createElement("button");
+        keyButton.className = "key-button";
+        keyButton.textContent = "Make Key Pick";
+
+        keyButton.addEventListener("click", () => {
+          toggleKeyPick(game.id, keyButton);
+        });
+
+        keyRow.appendChild(keyButton);
+
+        wrapper.appendChild(top);
+        wrapper.appendChild(teams);
+        wrapper.appendChild(keyRow);
+
+        container.appendChild(wrapper);
+      });
+    }
+
+    function selectTeam(game, selectedButton, otherButton, team, spread, league) {
+      selections[game.id] = {
+        gameId: game.id,
+        team,
+        spread,
+        league,
+        mustPick: game.mustPick
+      };
+
+      selectedButton.classList.add("selected");
+      otherButton.classList.remove("selected");
+
+      updateSummary();
+    }
+
+    function toggleKeyPick(gameId, button) {
+      if (!selections[gameId]) {
+        alert("Choose a team in this game before making it a Key Pick.");
+        return;
+      }
+
+      if (keyPicks.has(gameId)) {
+        keyPicks.delete(gameId);
+        button.classList.remove("active");
+        button.textContent = "Make Key Pick";
+      } else {
+        if (keyPicks.size >= 2) {
+          alert("You may choose exactly two Key Picks.");
+          return;
+        }
+
+        keyPicks.add(gameId);
+        button.classList.add("active");
+        button.textContent = "KEY PICK ✓";
+      }
+
+      updateSummary();
+    }
+
+    function updateSummary() {
+      const collegeCount = Object.values(selections)
+        .filter(pick => pick.league === "College").length;
+
+      const nflCount = Object.values(selections)
+        .filter(pick => pick.league === "NFL").length;
+
+      document.getElementById("collegeCount").textContent = collegeCount;
+      document.getElementById("nflCount").textContent = nflCount;
+      document.getElementById("keyCount").textContent = keyPicks.size;
+
+      const collegeMustPickDone = collegeGames
+        .filter(game => game.mustPick)
+        .every(game => selections[game.id]);
+
+      const nflMustPickDone = nflGames
+        .filter(game => game.mustPick)
+        .every(game => selections[game.id]);
+
+      const ready =
+        collegeCount === 5 &&
+        nflCount === 5 &&
+        keyPicks.size === 2 &&
+        collegeMustPickDone &&
+        nflMustPickDone;
+
+      document.getElementById("submitButton").disabled = !ready;
+    }
+
+    document.getElementById("submitButton").addEventListener("click", () => {
+      const finalPicks = Object.values(selections).map(pick => ({
+        ...pick,
+        keyPick: keyPicks.has(pick.gameId)
+      }));
+
+      console.log(finalPicks);
+
+      alert(
+        "Picks are valid! Next we will connect this screen to player accounts and save the picks."
+      );
+    });
+
+    renderGames(collegeGames, "collegeGames", "College");
+    renderGames(nflGames, "nflGames", "NFL");
+
+    updateSummary();
+  </script>
+
+</body>
+</html>
