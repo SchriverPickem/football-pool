@@ -723,17 +723,6 @@ let games =
   || structuredClone(sampleGames);
 
 
-/*
-==================================================
-PLAYER STATE
-==================================================
-
-These are now stored in localStorage so they stay
-intact when switching between the Player and
-Commissioner screens.
-*/
-
-
 let selections =
   JSON.parse(
     localStorage.getItem("footballPoolCurrentSelections")
@@ -750,16 +739,12 @@ let keyPicks =
   new Set(savedKeyPicks);
 
 
-/*
-Remove any saved picks that refer to games that
-no longer exist in the current slate.
-*/
 
 function cleanPlayerState() {
 
   const validGameIds =
     new Set(
-      games.map(game => game.id)
+      games.map(game => String(game.id))
     );
 
 
@@ -779,7 +764,7 @@ function cleanPlayerState() {
     new Set(
       [...keyPicks]
         .filter(gameId =>
-          validGameIds.has(gameId)
+          validGameIds.has(String(gameId))
           &&
           selections[gameId]
         )
@@ -791,9 +776,6 @@ function cleanPlayerState() {
 }
 
 
-/*
-Save the player's work-in-progress selections.
-*/
 
 function savePlayerState() {
 
@@ -811,11 +793,6 @@ function savePlayerState() {
 }
 
 
-/*
-Clear work-in-progress picks only when the slate
-actually changes in a way where the old picks
-should no longer be trusted.
-*/
 
 function clearPlayerState() {
 
@@ -823,6 +800,7 @@ function clearPlayerState() {
 
   keyPicks.clear();
 
+  
   savePlayerState();
 
 }
@@ -1382,11 +1360,6 @@ function submitPicks() {
   );
 
 
-  /*
-  Keep the current picks visible even after
-  submission.
-  */
-
   savePlayerState();
 
 
@@ -1617,14 +1590,41 @@ function setMustPick(gameId) {
 
 
   /*
-  Changing a Must Pick changes the weekly slate
-  requirements, so clear current player picks,
-  matching the prior behavior.
+  FIX:
+  Changing the Must Pick does NOT clear
+  existing player selections or Key Picks.
   */
 
-  clearPlayerState();
+
+  /*
+  Update the mustPick property on any
+  existing saved selections in this league
+  so their stored data stays consistent.
+  */
+
+  Object.values(selections)
+    .forEach(selection => {
+
+      const matchingGame =
+        games.find(
+          game =>
+            game.id === selection.gameId
+        );
+
+
+      if (matchingGame) {
+
+        selection.mustPick =
+          matchingGame.mustPick;
+
+      }
+
+    });
+
 
   saveGames();
+
+  savePlayerState();
 
   renderAdminGames();
 
@@ -1776,22 +1776,36 @@ function addGame() {
 
 
   /*
-  Preserve existing player selections when simply
-  adding another game to the available slate.
-
-  If the added game becomes the new Must Pick,
-  clear player selections because the required
-  game has changed.
+  Preserve existing player selections even if
+  this newly added game becomes the new Must Pick.
+  The player will simply be required to select
+  the new Must Pick before submitting.
   */
 
-  if (mustPick) {
 
-    clearPlayerState();
+  Object.values(selections)
+    .forEach(selection => {
 
-  }
+      const matchingGame =
+        games.find(
+          game =>
+            game.id === selection.gameId
+        );
+
+
+      if (matchingGame) {
+
+        selection.mustPick =
+          matchingGame.mustPick;
+
+      }
+
+    });
 
 
   saveGames();
+
+  savePlayerState();
 
   clearGameForm();
 
@@ -1920,11 +1934,6 @@ playerTab.addEventListener(
     );
 
 
-    /*
-    Re-render from the saved current state.
-    No selections are cleared here.
-    */
-
     renderPlayerGames();
 
   }
@@ -1952,12 +1961,6 @@ commissionerTab.addEventListener(
       "active"
     );
 
-
-    /*
-    IMPORTANT:
-    Switching to Commissioner does NOT touch
-    selections or Key Picks.
-    */
 
     renderAdminGames();
 
