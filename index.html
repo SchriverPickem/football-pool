@@ -1774,6 +1774,26 @@ function addGame() {
 
   games.push(newGame);
 
+/*
+If the newly added game becomes the Must Pick,
+preserve all existing player selections and Key Picks.
+Only update the stored Must Pick status of selections.
+*/
+
+Object.values(selections).forEach(selection => {
+
+  const matchingGame = games.find(
+    game => game.id === selection.gameId
+  );
+
+  if (matchingGame) {
+    selection.mustPick = matchingGame.mustPick;
+  }
+
+});
+
+savePlayerState();
+
 
   /*
   Preserve existing player selections even if
