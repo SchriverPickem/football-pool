@@ -318,10 +318,153 @@
       display: none;
     }
 
+    .result-controls {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      margin-top: 7px;
+    }
+
+    .result-button {
+      border: 1px solid #cbd5e1;
+      background: white;
+      padding: 7px 9px;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .result-button.active {
+      background: #111827;
+      color: white;
+      border-color: #111827;
+    }
+
+    .score-box {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      background: #f3f4f6;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .auth-box { background:white; border-radius:14px; padding:14px; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+    .auth-row { display:grid; grid-template-columns:1fr 1fr auto auto; gap:8px; align-items:center; }
+    .auth-status { margin-top:8px; font-size:13px; color:#6b7280; }
+    .pool-name-row { display:none; grid-template-columns:minmax(180px, 1fr) auto; gap:8px; align-items:center; margin-top:10px; padding-top:10px; border-top:1px solid #e5e7eb; }
+    .pool-name-label { grid-column:1 / -1; font-size:13px; font-weight:700; color:#374151; }
+
+    .standings-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .standings-head h2,
+    .standings-head h3 {
+      margin-bottom: 0;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .standings-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 520px;
+    }
+
+    .standings-table th,
+    .standings-table td {
+      padding: 11px 10px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+    }
+
+    .standings-table th {
+      font-size: 12px;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      background: #f9fafb;
+    }
+
+    .standings-table td.rank,
+    .standings-table th.rank {
+      width: 64px;
+      text-align: center;
+    }
+
+    .standings-table td.number,
+    .standings-table th.number {
+      text-align: right;
+    }
+
+    .standings-table tr.you-row td {
+      background: #eff6ff;
+      font-weight: 700;
+    }
+
+    .standings-empty {
+      padding: 14px 0;
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+
+    .week-lock-banner {
+      margin-bottom: 16px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .week-lock-banner.open {
+      background: #ecfdf5;
+      border-color: #86efac;
+      color: #166534;
+    }
+
+    .week-lock-banner.locked {
+      background: #fef2f2;
+      border-color: #fca5a5;
+      color: #991b1b;
+    }
+
+    .lock-controls {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) auto auto auto;
+      gap: 8px;
+      align-items: end;
+    }
+
+    .lock-controls .field {
+      margin: 0;
+    }
+
+    .lock-status {
+      margin-top: 10px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
     @media (max-width: 650px) {
       .commissioner-form {
         grid-template-columns: 1fr;
       }
+
+      .auth-row { grid-template-columns: 1fr; }
+      .pool-name-row { grid-template-columns: 1fr; }
+      .lock-controls { grid-template-columns: 1fr; }
 
       .field.full {
         grid-column: auto;
@@ -347,8 +490,27 @@
     <p>College & NFL Against-the-Spread Pool</p>
   </div>
 
+  <div class="auth-box">
+    <div class="auth-row">
+      <input id="emailInput" type="email" placeholder="Email">
+      <input id="passwordInput" type="password" placeholder="Password">
+      <button id="loginButton" type="button" class="primary" onclick="handleLogin()">Sign In</button>
+      <button id="logoutButton" class="secondary" style="display:none;">Sign Out</button>
+    </div>
+    <div id="authStatus" class="auth-status">Sign in to load the shared Schriver Pickem slate.</div>
+
+    <div id="poolNameRow" class="pool-name-row">
+      <div class="pool-name-label">Pool Name — this is what everyone sees in Standings</div>
+      <input id="poolNameInput" type="text" maxlength="40" placeholder="Example: Fourth & Drunk">
+      <button id="savePoolNameButton" type="button" class="secondary">Save Pool Name</button>
+    </div>
+
+    <div id="jsStatus" class="auth-status" style="font-weight:bold;">JavaScript has not loaded yet.</div>
+  </div>
+
   <div class="tabs">
     <button class="tab active" id="playerTab">Make Picks</button>
+    <button class="tab" id="standingsTab" style="display:none;">Standings</button>
     <button class="tab" id="commissionerTab">Commissioner</button>
   </div>
 
@@ -356,6 +518,10 @@
   <!-- PLAYER SCREEN -->
 
   <div id="playerPanel" class="panel active">
+
+    <div id="playerLockBanner" class="week-lock-banner">
+      Sign in to see this week's pick deadline.
+    </div>
 
     <div class="section">
       <h2>College Football</h2>
@@ -410,6 +576,61 @@
 
     <div id="savedMessage" class="saved-picks">
       Picks saved successfully.
+    </div>
+
+    <div id="playerScoreBox" class="score-box">
+      Weekly Score: 0 points
+    </div>
+
+  </div>
+
+
+  <!-- STANDINGS SCREEN -->
+
+  <div id="standingsPanel" class="panel">
+
+    <div class="section">
+      <div class="standings-head">
+        <h2>Weekly Standings</h2>
+        <span id="weeklyStandingsLabel" class="note"></span>
+      </div>
+      <p class="note">Live standings based on commissioner-entered game results.</p>
+      <div id="weeklyStandingsStatus" class="standings-empty">Sign in to view standings.</div>
+      <div class="table-wrap">
+        <table id="weeklyStandingsTable" class="standings-table" style="display:none;">
+          <thead>
+            <tr>
+              <th class="rank">Rank</th>
+              <th>Player</th>
+              <th class="number">Games Scored</th>
+              <th class="number">Points</th>
+            </tr>
+          </thead>
+          <tbody id="weeklyStandingsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="standings-head">
+        <h2>Season Standings</h2>
+        <span id="seasonStandingsLabel" class="note"></span>
+      </div>
+      <p class="note">Cumulative points from all submitted weeks in the season.</p>
+      <div id="seasonStandingsStatus" class="standings-empty">Sign in to view standings.</div>
+      <div class="table-wrap">
+        <table id="seasonStandingsTable" class="standings-table" style="display:none;">
+          <thead>
+            <tr>
+              <th class="rank">Rank</th>
+              <th>Player</th>
+              <th class="number">Weeks Played</th>
+              <th class="number">Season Points</th>
+            </tr>
+          </thead>
+          <tbody id="seasonStandingsBody"></tbody>
+        </table>
+      </div>
     </div>
 
   </div>
@@ -492,6 +713,41 @@
 
     <div class="section">
 
+      <h2>Weekly Pick Deadline</h2>
+
+      <p class="note">
+        Players may make or change picks until this deadline. After it passes,
+        team selections, Key Picks, and submissions are locked. Commissioner result entry still works.
+      </p>
+
+      <div class="lock-controls">
+        <div class="field">
+          <label>Lock Date & Time</label>
+          <input id="weekLockInput" type="datetime-local">
+        </div>
+
+        <button id="saveWeekLockButton" type="button" class="primary">
+          Save Deadline
+        </button>
+
+        <button id="lockWeekNowButton" type="button" class="secondary">
+          Lock Now
+        </button>
+
+        <button id="clearWeekLockButton" type="button" class="secondary">
+          Remove Deadline
+        </button>
+      </div>
+
+      <div id="commissionerLockStatus" class="lock-status">
+        No deadline loaded.
+      </div>
+
+    </div>
+
+
+    <div class="section">
+
       <h3>College Slate</h3>
 
       <div id="collegeAdminGames"></div>
@@ -504,6 +760,22 @@
       <h3>NFL Slate</h3>
 
       <div id="nflAdminGames"></div>
+
+    </div>
+
+
+    <div class="section">
+
+      <h3>Weekly Scoring</h3>
+
+      <p class="note">
+        Mark the side that covered each completed game.
+        Normal correct pick = 1 point. Correct Key Pick = 2 points total.
+      </p>
+
+      <div id="commissionerScoreBox" class="score-box">
+        Submitted Player Score: 0 points
+      </div>
 
     </div>
 
@@ -718,27 +990,290 @@ const sampleGames = [
 ];
 
 
-let games =
-  JSON.parse(localStorage.getItem("footballPoolGames"))
-  || structuredClone(sampleGames);
+const SUPABASE_URL = "https://yapvuumdnzqwobpkhmzl.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_pAn8XfIxAjKKd7fFPi1g3Q_jpJJyR-p";
 
+/*
+==================================================
+SELF-CONTAINED SUPABASE HTTP CLIENT
+==================================================
+This keeps the preview independent of an external CDN script.
+It implements only the Supabase operations Schriver Pickem uses.
+*/
+function createSchriverSupabaseClient(baseUrl, publishableKey) {
+  const SESSION_KEY = "schriverPickemSupabaseSession";
 
-let selections =
-  JSON.parse(
-    localStorage.getItem("footballPoolCurrentSelections")
-  ) || {};
+  function loadSession() {
+    try {
+      return JSON.parse(localStorage.getItem(SESSION_KEY)) || null;
+    } catch {
+      return null;
+    }
+  }
 
+  function saveSession(session) {
+    if (session) {
+      localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    } else {
+      localStorage.removeItem(SESSION_KEY);
+    }
+  }
 
-let savedKeyPicks =
-  JSON.parse(
-    localStorage.getItem("footballPoolCurrentKeyPicks")
-  ) || [];
+  function apiHeaders(extra = {}) {
+    const session = loadSession();
+    const headers = {
+      apikey: publishableKey,
+      ...extra
+    };
+    if (session?.access_token) {
+      headers.Authorization = `Bearer ${session.access_token}`;
+    }
+    return headers;
+  }
 
+  async function readResponse(response) {
+    const text = await response.text();
+    let payload = null;
+    if (text) {
+      try { payload = JSON.parse(text); }
+      catch { payload = text; }
+    }
+    if (!response.ok) {
+      const message =
+        payload?.message ||
+        payload?.msg ||
+        payload?.error_description ||
+        payload?.error ||
+        `Request failed (${response.status})`;
+      return { data: null, error: { message, status: response.status } };
+    }
+    return { data: payload, error: null };
+  }
 
-let keyPicks =
-  new Set(savedKeyPicks);
+  class QueryBuilder {
+    constructor(table) {
+      this.table = table;
+      this.method = "GET";
+      this.body = null;
+      this.selectColumns = "*";
+      this.filters = [];
+      this.orders = [];
+      this.rowLimit = null;
+      this.singleMode = null;
+    }
 
+    select(columns = "*") {
+      this.method = "GET";
+      this.selectColumns = columns;
+      return this;
+    }
 
+    insert(values) {
+      this.method = "POST";
+      this.body = values;
+      return this;
+    }
+
+    update(values) {
+      this.method = "PATCH";
+      this.body = values;
+      return this;
+    }
+
+    delete() {
+      this.method = "DELETE";
+      return this;
+    }
+
+    eq(column, value) {
+      this.filters.push([column, value]);
+      return this;
+    }
+
+    order(column, options = {}) {
+      this.orders.push(`${column}.${options.ascending === false ? "desc" : "asc"}`);
+      return this;
+    }
+
+    limit(value) {
+      this.rowLimit = value;
+      return this;
+    }
+
+    single() {
+      this.singleMode = "single";
+      return this.execute();
+    }
+
+    maybeSingle() {
+      this.singleMode = "maybeSingle";
+      return this.execute();
+    }
+
+    async execute() {
+      const params = new URLSearchParams();
+      if (this.method === "GET") {
+        params.set("select", this.selectColumns);
+      }
+      for (const [column, value] of this.filters) {
+        params.append(column, `eq.${String(value)}`);
+      }
+      if (this.orders.length) params.set("order", this.orders.join(","));
+      if (this.rowLimit !== null) params.set("limit", String(this.rowLimit));
+
+      const query = params.toString();
+      const url = `${baseUrl}/rest/v1/${encodeURIComponent(this.table)}${query ? `?${query}` : ""}`;
+      const headers = apiHeaders();
+      const options = { method: this.method, headers };
+
+      if (this.body !== null) {
+        headers["Content-Type"] = "application/json";
+        headers.Prefer = "return=minimal";
+        options.body = JSON.stringify(this.body);
+      }
+
+      try {
+        const response = await fetch(url, options);
+        const result = await readResponse(response);
+        if (result.error) return result;
+
+        if (this.singleMode) {
+          const rows = Array.isArray(result.data) ? result.data : [];
+          if (rows.length === 1) return { data: rows[0], error: null };
+          if (rows.length === 0 && this.singleMode === "maybeSingle") {
+            return { data: null, error: null };
+          }
+          return {
+            data: null,
+            error: { message: this.singleMode === "single" ? "Expected exactly one row." : "Expected at most one row." }
+          };
+        }
+
+        return result;
+      } catch (error) {
+        return { data: null, error: { message: error?.message || "Network request failed." } };
+      }
+    }
+
+    then(resolve, reject) {
+      return this.execute().then(resolve, reject);
+    }
+  }
+
+  return {
+    auth: {
+      async signInWithPassword({ email, password }) {
+        try {
+          const response = await fetch(`${baseUrl}/auth/v1/token?grant_type=password`, {
+            method: "POST",
+            headers: {
+              apikey: publishableKey,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ email, password })
+          });
+          const result = await readResponse(response);
+          if (result.error) return result;
+
+          const payload = result.data || {};
+          const session = {
+            access_token: payload.access_token,
+            refresh_token: payload.refresh_token,
+            expires_in: payload.expires_in,
+            expires_at: Math.floor(Date.now() / 1000) + (payload.expires_in || 3600),
+            token_type: payload.token_type,
+            user: payload.user
+          };
+          saveSession(session);
+          return { data: { user: payload.user, session }, error: null };
+        } catch (error) {
+          return { data: null, error: { message: error?.message || "Network request failed." } };
+        }
+      },
+
+      async signOut() {
+        const session = loadSession();
+        try {
+          if (session?.access_token) {
+            await fetch(`${baseUrl}/auth/v1/logout`, {
+              method: "POST",
+              headers: {
+                apikey: publishableKey,
+                Authorization: `Bearer ${session.access_token}`
+              }
+            });
+          }
+        } finally {
+          saveSession(null);
+        }
+        return { error: null };
+      },
+
+      async getSession() {
+        return { data: { session: loadSession() }, error: null };
+      }
+    },
+
+    from(table) {
+      return new QueryBuilder(table);
+    },
+
+    async rpc(functionName, args) {
+      try {
+        const response = await fetch(`${baseUrl}/rest/v1/rpc/${encodeURIComponent(functionName)}`, {
+          method: "POST",
+          headers: apiHeaders({ "Content-Type": "application/json" }),
+          body: JSON.stringify(args || {})
+        });
+        return await readResponse(response);
+      } catch (error) {
+        return { data: null, error: { message: error?.message || "Network request failed." } };
+      }
+    }
+  };
+}
+
+const supabaseClient = createSchriverSupabaseClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+let currentUser = null;
+let currentProfile = null;
+let currentWeek = null;
+let games = [];
+
+let selections = {};
+let keyPicks = new Set();
+
+function getPlayerStateStorageKeys() {
+  if (!currentUser || !currentWeek) return null;
+
+  const scope = `${currentUser.id}:${currentWeek.id}`;
+
+  return {
+    selections: `schriverPickemDraftSelections:${scope}`,
+    keyPicks: `schriverPickemDraftKeyPicks:${scope}`
+  };
+}
+
+function loadPlayerState() {
+  selections = {};
+  keyPicks = new Set();
+
+  const keys = getPlayerStateStorageKeys();
+  if (!keys) return;
+
+  try {
+    selections = JSON.parse(localStorage.getItem(keys.selections)) || {};
+  } catch {
+    selections = {};
+  }
+
+  try {
+    const savedKeyPicks = JSON.parse(localStorage.getItem(keys.keyPicks)) || [];
+    keyPicks = new Set(savedKeyPicks);
+  } catch {
+    keyPicks = new Set();
+  }
+}
 
 function cleanPlayerState() {
 
@@ -778,18 +1313,18 @@ function cleanPlayerState() {
 
 
 function savePlayerState() {
+  const keys = getPlayerStateStorageKeys();
+  if (!keys) return;
 
   localStorage.setItem(
-    "footballPoolCurrentSelections",
+    keys.selections,
     JSON.stringify(selections)
   );
 
-
   localStorage.setItem(
-    "footballPoolCurrentKeyPicks",
+    keys.keyPicks,
     JSON.stringify([...keyPicks])
   );
-
 }
 
 
@@ -807,16 +1342,231 @@ function clearPlayerState() {
 
 
 
-function saveGames() {
-
-  localStorage.setItem(
-    "footballPoolGames",
-    JSON.stringify(games)
-  );
-
+function mapDbGame(row) {
+  return {
+    id: row.id, league: row.league, favorite: row.favorite,
+    favoriteSpread: String(row.favorite_spread), underdog: row.underdog,
+    underdogSpread: String(row.underdog_spread), homeTeam: row.home_team,
+    mustPick: row.must_pick, result: row.result
+  };
 }
 
+async function loadSharedData() {
+  if (!currentUser) {
+    selections = {};
+    keyPicks = new Set();
+    games = [];
+    currentWeek = null;
+    renderWeekLockUi();
+    renderPlayerGames();
+    renderAdminGames();
+    await renderScore();
+    return;
+  }
 
+  const { data: weeks, error: weekError } = await supabaseClient.from("weeks").select("*").order("season", {ascending:false}).order("week_number", {ascending:false}).limit(1);
+  if (weekError) { showAuthMessage("Could not load current week: " + weekError.message); return; }
+
+  currentWeek = weeks?.[0] || null;
+
+  if (!currentWeek) {
+    selections = {};
+    keyPicks = new Set();
+    games = [];
+    renderWeekLockUi();
+    renderPlayerGames();
+    renderAdminGames();
+    return;
+  }
+
+  // Load only this signed-in player's unfinished card for this week.
+  loadPlayerState();
+
+  const { data: rows, error } = await supabaseClient.from("games").select("*").eq("week_id", currentWeek.id).order("id", {ascending:true});
+  if (error) { showAuthMessage("Could not load games: " + error.message); return; }
+
+  games = (rows || []).map(mapDbGame);
+  cleanPlayerState();
+  renderWeekLockUi();
+
+  const savedMessage = document.getElementById("savedMessage");
+  if (savedMessage) savedMessage.style.display = "none";
+
+  renderPlayerGames();
+  renderAdminGames();
+  await renderScore();
+  await loadStandings();
+}
+
+function saveGames() {}
+
+function getWeekLockDate() {
+  if (!currentWeek?.lock_at) return null;
+  const lockDate = new Date(currentWeek.lock_at);
+  return Number.isNaN(lockDate.getTime()) ? null : lockDate;
+}
+
+function isWeekLocked() {
+  if (!currentWeek) return false;
+  if (currentWeek.is_open === false) return true;
+
+  const lockDate = getWeekLockDate();
+  return Boolean(lockDate && Date.now() >= lockDate.getTime());
+}
+
+function formatWeekLockDate(lockDate) {
+  if (!lockDate) return "";
+  return lockDate.toLocaleString([], {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  });
+}
+
+function lockDateToInputValue(lockDate) {
+  if (!lockDate) return "";
+  const localDate = new Date(
+    lockDate.getTime() - lockDate.getTimezoneOffset() * 60000
+  );
+  return localDate.toISOString().slice(0, 16);
+}
+
+function renderWeekLockUi() {
+  const banner = document.getElementById("playerLockBanner");
+  const input = document.getElementById("weekLockInput");
+  const commissionerStatus = document.getElementById("commissionerLockStatus");
+
+  if (!currentUser) {
+    if (banner) {
+      banner.className = "week-lock-banner";
+      banner.textContent = "Sign in to see this week's pick deadline.";
+    }
+    if (input) input.value = "";
+    if (commissionerStatus) commissionerStatus.textContent = "Sign in to manage the deadline.";
+    return;
+  }
+
+  if (!currentWeek) {
+    if (banner) {
+      banner.className = "week-lock-banner locked";
+      banner.textContent = "No current week is available.";
+    }
+    if (input) input.value = "";
+    if (commissionerStatus) commissionerStatus.textContent = "No current week is available.";
+    return;
+  }
+
+  const lockDate = getWeekLockDate();
+  const locked = isWeekLocked();
+
+  if (input) input.value = lockDateToInputValue(lockDate);
+
+  let message;
+  if (currentWeek.is_open === false) {
+    message = "Picks are locked by the commissioner.";
+  } else if (!lockDate) {
+    message = "Picks are open. No deadline has been set yet.";
+  } else if (locked) {
+    message = `Picks locked ${formatWeekLockDate(lockDate)}.`;
+  } else {
+    message = `Picks are open until ${formatWeekLockDate(lockDate)}.`;
+  }
+
+  if (banner) {
+    banner.className = `week-lock-banner ${locked ? "locked" : "open"}`;
+    banner.textContent = message;
+  }
+
+  if (commissionerStatus) {
+    commissionerStatus.textContent = message;
+  }
+}
+
+async function saveWeekLock() {
+  if (!currentWeek || !currentProfile?.is_commissioner) return;
+
+  const input = document.getElementById("weekLockInput");
+  const rawValue = input.value;
+
+  if (!rawValue) {
+    alert("Choose a lock date and time first.");
+    return;
+  }
+
+  const lockDate = new Date(rawValue);
+  if (Number.isNaN(lockDate.getTime())) {
+    alert("That lock date and time is not valid.");
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("weeks")
+    .update({
+      lock_at: lockDate.toISOString(),
+      is_open: true
+    })
+    .eq("id", currentWeek.id);
+
+  if (error) {
+    alert("Could not save the deadline: " + error.message);
+    return;
+  }
+
+  await loadSharedData();
+}
+
+async function lockWeekNow() {
+  if (!currentWeek || !currentProfile?.is_commissioner) return;
+
+  const button = document.getElementById("lockWeekNowButton");
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Locking...";
+  }
+
+  try {
+    const { error } = await supabaseClient
+      .from("weeks")
+      .update({
+        lock_at: new Date().toISOString(),
+        is_open: false
+      })
+      .eq("id", currentWeek.id);
+
+    if (error) {
+      alert("Could not lock the week: " + error.message);
+      return;
+    }
+
+    await loadSharedData();
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = "Lock Now";
+    }
+  }
+}
+
+async function clearWeekLock() {
+  if (!currentWeek || !currentProfile?.is_commissioner) return;
+
+  const { error } = await supabaseClient
+    .from("weeks")
+    .update({
+      lock_at: null,
+      is_open: true
+    })
+    .eq("id", currentWeek.id);
+
+  if (error) {
+    alert("Could not remove the deadline: " + error.message);
+    return;
+  }
+
+  await loadSharedData();
+}
 
 function getLeagueGames(league) {
 
@@ -1065,12 +1815,45 @@ function renderLeague(league, containerId) {
 
 function selectTeam(game, side) {
 
+  if (isWeekLocked()) {
+    alert("Picks are locked for this week.");
+    renderWeekLockUi();
+    updateSummary();
+    return;
+  }
+
   const league =
     game.league;
 
 
+  const existingSelection =
+    selections[game.id];
+
+
+  const clickedTeam =
+    side === "favorite"
+      ? game.favorite
+      : game.underdog;
+
+
   const alreadySelected =
-    Boolean(selections[game.id]);
+    Boolean(existingSelection);
+
+
+  // Exact same team clicked again: remove the entire game selection
+  // before enforcing the 5-pick maximum. removeSelection() also
+  // removes any Key Pick designation for this game.
+  if (
+    existingSelection
+    &&
+    existingSelection.team === clickedTeam
+  ) {
+
+    removeSelection(game.id);
+
+    return;
+
+  }
 
 
   if (
@@ -1090,9 +1873,7 @@ function selectTeam(game, side) {
 
 
   const team =
-    side === "favorite"
-      ? game.favorite
-      : game.underdog;
+    clickedTeam;
 
 
   const spread =
@@ -1141,6 +1922,13 @@ function removeSelection(gameId) {
 
 
 function toggleKeyPick(gameId) {
+
+  if (isWeekLocked()) {
+    alert("Picks are locked for this week.");
+    renderWeekLockUi();
+    updateSummary();
+    return;
+  }
 
   if (!selections[gameId]) {
 
@@ -1239,6 +2027,9 @@ function updateSummary() {
     mustPickCompleted("NFL");
 
 
+  const locked =
+    isWeekLocked();
+
   const ready =
     collegeCount === 5
     &&
@@ -1248,7 +2039,9 @@ function updateSummary() {
     &&
     nflMust
     &&
-    keyPicks.size === 2;
+    keyPicks.size === 2
+    &&
+    !locked;
 
 
   document.getElementById(
@@ -1261,6 +2054,16 @@ function updateSummary() {
     document.getElementById(
       "statusMessage"
     );
+
+
+  if (locked) {
+
+    status.textContent =
+      "Picks are locked for this week.";
+
+    return;
+
+  }
 
 
   if (ready) {
@@ -1338,52 +2141,193 @@ document
 
 
 
-function submitPicks() {
+async function submitPicks() {
+  if (isWeekLocked()) {
+    alert("Picks are locked for this week.");
+    renderWeekLockUi();
+    updateSummary();
+    return;
+  }
 
-  const finalPicks =
-    Object.values(selections)
-      .map(selection => ({
-
-        ...selection,
-
-        keyPick:
-          keyPicks.has(
-            selection.gameId
-          )
-
-      }));
-
-
-  localStorage.setItem(
-    "footballPoolPlayerPicks",
-    JSON.stringify(finalPicks)
-  );
-
-
+  const validCard = selectedCount("College")===5 && selectedCount("NFL")===5 && mustPickCompleted("College") && mustPickCompleted("NFL") && keyPicks.size===2;
+  if (!validCard) { updateSummary(); return; }
+  if (!currentUser || !currentWeek) { alert("Please sign in before submitting picks."); return; }
+  const rpcPicks=Object.values(selections).map(s=>({game_id:Number(s.gameId), side:s.side, is_key_pick:keyPicks.has(s.gameId)||keyPicks.has(String(s.gameId))}));
+  const { error } = await supabaseClient.rpc("submit_weekly_picks", { p_week_id: currentWeek.id, p_picks: rpcPicks });
+  if (error) { alert("Picks were not submitted: " + error.message); return; }
   savePlayerState();
-
-
-  console.table(finalPicks);
-
-
-  const savedMessage =
-    document.getElementById(
-      "savedMessage"
-    );
-
-
-  savedMessage.style.display =
-    "block";
-
-
-  savedMessage.textContent =
-    "Picks saved successfully on this device.";
-
+  const m=document.getElementById("savedMessage"); m.style.display="block"; m.textContent="Picks submitted successfully to Schriver Pickem. All 10 picks and both Key Picks are saved.";
+  document.getElementById("statusMessage").textContent="Picks submitted successfully.";
+  await renderScore();
+  await loadStandings();
 }
 
+async function renderScore() {
+  let total=0;
+  if (currentUser && currentWeek) {
+    const { data, error } = await supabaseClient.from("weekly_scores").select("score").eq("user_id", currentUser.id).eq("week_id", currentWeek.id).maybeSingle();
+    if (!error && data) total=Number(data.score)||0;
+  }
+  const p=document.getElementById("playerScoreBox"), c=document.getElementById("commissionerScoreBox");
+  if(p) p.textContent=`Weekly Score: ${total} point${total===1?"":"s"}`;
+  if(c) c.textContent=`Your Submitted Score: ${total} point${total===1?"":"s"}`;
+}
 
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function competitionRanks(rows, scoreField) {
+  let lastScore = null;
+  let lastRank = 0;
+  return rows.map((row, index) => {
+    const score = Number(row[scoreField]) || 0;
+    if (lastScore === null || score !== lastScore) {
+      lastRank = index + 1;
+      lastScore = score;
+    }
+    return { ...row, displayRank: lastRank };
+  });
+}
+
+function renderWeeklyStandings(rows) {
+  const status = document.getElementById("weeklyStandingsStatus");
+  const table = document.getElementById("weeklyStandingsTable");
+  const body = document.getElementById("weeklyStandingsBody");
+  const label = document.getElementById("weeklyStandingsLabel");
+
+  label.textContent = currentWeek
+    ? `${currentWeek.label || `Week ${currentWeek.week_number}`} • ${currentWeek.season}`
+    : "";
+
+  body.innerHTML = "";
+  if (!rows.length) {
+    table.style.display = "none";
+    status.style.display = "block";
+    status.textContent = "No submitted cards yet for this week.";
+    return;
+  }
+
+  const ranked = competitionRanks(rows, "score");
+  ranked.forEach(row => {
+    const tr = document.createElement("tr");
+    if (currentUser && String(row.user_id) === String(currentUser.id)) {
+      tr.classList.add("you-row");
+    }
+    tr.innerHTML = `
+      <td class="rank">${row.displayRank}</td>
+      <td>${escapeHtml(row.display_name || "Player")}${currentUser && String(row.user_id) === String(currentUser.id) ? " (You)" : ""}</td>
+      <td class="number">${Number(row.games_scored) || 0}</td>
+      <td class="number"><strong>${Number(row.score) || 0}</strong></td>
+    `;
+    body.appendChild(tr);
+  });
+
+  status.style.display = "none";
+  table.style.display = "table";
+}
+
+function renderSeasonStandings(rows) {
+  const status = document.getElementById("seasonStandingsStatus");
+  const table = document.getElementById("seasonStandingsTable");
+  const body = document.getElementById("seasonStandingsBody");
+  const label = document.getElementById("seasonStandingsLabel");
+
+  label.textContent = currentWeek ? String(currentWeek.season) : "";
+  body.innerHTML = "";
+  if (!rows.length) {
+    table.style.display = "none";
+    status.style.display = "block";
+    status.textContent = "No season standings yet.";
+    return;
+  }
+
+  const ranked = competitionRanks(rows, "season_score");
+  ranked.forEach(row => {
+    const tr = document.createElement("tr");
+    if (currentUser && String(row.user_id) === String(currentUser.id)) {
+      tr.classList.add("you-row");
+    }
+    tr.innerHTML = `
+      <td class="rank">${row.displayRank}</td>
+      <td>${escapeHtml(row.display_name || "Player")}${currentUser && String(row.user_id) === String(currentUser.id) ? " (You)" : ""}</td>
+      <td class="number">${Number(row.weeks_played) || 0}</td>
+      <td class="number"><strong>${Number(row.season_score) || 0}</strong></td>
+    `;
+    body.appendChild(tr);
+  });
+
+  status.style.display = "none";
+  table.style.display = "table";
+}
+
+function clearStandings(message = "Sign in to view standings.") {
+  document.getElementById("weeklyStandingsBody").innerHTML = "";
+  document.getElementById("seasonStandingsBody").innerHTML = "";
+  document.getElementById("weeklyStandingsTable").style.display = "none";
+  document.getElementById("seasonStandingsTable").style.display = "none";
+  document.getElementById("weeklyStandingsStatus").style.display = "block";
+  document.getElementById("seasonStandingsStatus").style.display = "block";
+  document.getElementById("weeklyStandingsStatus").textContent = message;
+  document.getElementById("seasonStandingsStatus").textContent = message;
+  document.getElementById("weeklyStandingsLabel").textContent = "";
+  document.getElementById("seasonStandingsLabel").textContent = "";
+}
+
+async function loadStandings() {
+  if (!currentUser || !currentWeek) {
+    clearStandings();
+    return;
+  }
+
+  document.getElementById("weeklyStandingsStatus").style.display = "block";
+  document.getElementById("weeklyStandingsStatus").textContent = "Loading weekly standings...";
+  document.getElementById("seasonStandingsStatus").style.display = "block";
+  document.getElementById("seasonStandingsStatus").textContent = "Loading season standings...";
+
+  const weeklyResult = await supabaseClient.rpc("get_weekly_standings", {
+    p_week_id: currentWeek.id
+  });
+
+  if (weeklyResult.error) {
+    document.getElementById("weeklyStandingsTable").style.display = "none";
+    document.getElementById("weeklyStandingsStatus").textContent =
+      "Could not load weekly standings: " + weeklyResult.error.message;
+  } else {
+    renderWeeklyStandings(Array.isArray(weeklyResult.data) ? weeklyResult.data : []);
+  }
+
+  const seasonResult = await supabaseClient.rpc("get_season_standings", {
+    p_season: Number(currentWeek.season)
+  });
+
+  if (seasonResult.error) {
+    document.getElementById("seasonStandingsTable").style.display = "none";
+    document.getElementById("seasonStandingsStatus").textContent =
+      "Could not load season standings: " + seasonResult.error.message;
+  } else {
+    renderSeasonStandings(Array.isArray(seasonResult.data) ? seasonResult.data : []);
+  }
+}
+
+async function setGameResult(gameId, side) {
+  const { error }=await supabaseClient.from("games").update({result:side}).eq("id",gameId);
+  if(error){alert("Could not save result: "+error.message);return;} await loadSharedData();
+}
+
+async function clearGameResult(gameId) {
+  const { error }=await supabaseClient.from("games").update({result:null}).eq("id",gameId);
+  if(error){alert("Could not clear result: "+error.message);return;} await loadSharedData();
+}
 
 /*
+============================================
+COMMISSIONER/*
 ============================================
 COMMISSIONER
 ============================================
@@ -1496,6 +2440,81 @@ function renderAdminLeague(
     `;
 
 
+    const resultControls =
+      document.createElement("div");
+
+    resultControls.className =
+      "result-controls";
+
+
+    const favoriteResultButton =
+      document.createElement("button");
+
+    favoriteResultButton.className =
+      "result-button";
+
+    if (game.result === "favorite") {
+      favoriteResultButton.classList.add("active");
+    }
+
+    favoriteResultButton.textContent =
+      `${game.favorite} covered`;
+
+    favoriteResultButton.addEventListener(
+      "click",
+      () => setGameResult(game.id, "favorite")
+    );
+
+
+    const underdogResultButton =
+      document.createElement("button");
+
+    underdogResultButton.className =
+      "result-button";
+
+    if (game.result === "underdog") {
+      underdogResultButton.classList.add("active");
+    }
+
+    underdogResultButton.textContent =
+      `${game.underdog} covered`;
+
+    underdogResultButton.addEventListener(
+      "click",
+      () => setGameResult(game.id, "underdog")
+    );
+
+
+    const clearResultButton =
+      document.createElement("button");
+
+    clearResultButton.className =
+      "result-button";
+
+    clearResultButton.textContent =
+      "Clear Result";
+
+    clearResultButton.addEventListener(
+      "click",
+      () => clearGameResult(game.id)
+    );
+
+
+    resultControls.appendChild(
+      favoriteResultButton
+    );
+
+    resultControls.appendChild(
+      underdogResultButton
+    );
+
+    resultControls.appendChild(
+      clearResultButton
+    );
+
+    info.appendChild(resultControls);
+
+
     const buttons =
       document.createElement("div");
 
@@ -1561,103 +2580,20 @@ function renderAdminLeague(
 
 
 
-function setMustPick(gameId) {
-
-  const target =
-    games.find(
-      game => game.id === gameId
-    );
-
-
-  if (!target) {
-    return;
-  }
-
-
-  games.forEach(game => {
-
-    if (
-      game.league
-      === target.league
-    ) {
-
-      game.mustPick =
-        game.id === gameId;
-
-    }
-
-  });
-
-
-  /*
-  FIX:
-  Changing the Must Pick does NOT clear
-  existing player selections or Key Picks.
-  */
-
-
-  /*
-  Update the mustPick property on any
-  existing saved selections in this league
-  so their stored data stays consistent.
-  */
-
-  Object.values(selections)
-    .forEach(selection => {
-
-      const matchingGame =
-        games.find(
-          game =>
-            game.id === selection.gameId
-        );
-
-
-      if (matchingGame) {
-
-        selection.mustPick =
-          matchingGame.mustPick;
-
-      }
-
-    });
-
-
-  saveGames();
-
-  savePlayerState();
-
-  renderAdminGames();
-
-  renderPlayerGames();
-
+async function setMustPick(gameId) {
+  const target=games.find(g=>String(g.id)===String(gameId)); if(!target||!currentWeek)return;
+  let r=await supabaseClient.from("games").update({must_pick:false}).eq("week_id",currentWeek.id).eq("league",target.league);
+  if(r.error){alert("Could not change Must Pick: "+r.error.message);return;}
+  r=await supabaseClient.from("games").update({must_pick:true}).eq("id",gameId);
+  if(r.error){alert("Could not change Must Pick: "+r.error.message);return;}
+  await loadSharedData();
 }
 
-
-
-function deleteGame(gameId) {
-
-  games =
-    games.filter(
-      game =>
-        game.id !== gameId
-    );
-
-
-  delete selections[gameId];
-
-  keyPicks.delete(gameId);
-
-  saveGames();
-
-  savePlayerState();
-
-  renderAdminGames();
-
-  renderPlayerGames();
-
+async function deleteGame(gameId) {
+  const { error }=await supabaseClient.from("games").delete().eq("id",gameId);
+  if(error){alert("Could not delete game: "+error.message);return;}
+  delete selections[gameId]; keyPicks.delete(gameId); keyPicks.delete(String(gameId)); savePlayerState(); await loadSharedData();
 }
-
-
 
 document
   .getElementById("addGameButton")
@@ -1668,174 +2604,20 @@ document
 
 
 
-function addGame() {
-
-  const league =
-    document.getElementById(
-      "leagueInput"
-    ).value;
-
-
-  const favorite =
-    document.getElementById(
-      "favoriteInput"
-    ).value.trim();
-
-
-  const favoriteSpread =
-    document.getElementById(
-      "favoriteSpreadInput"
-    ).value.trim();
-
-
-  const underdog =
-    document.getElementById(
-      "underdogInput"
-    ).value.trim();
-
-
-  const underdogSpread =
-    document.getElementById(
-      "underdogSpreadInput"
-    ).value.trim();
-
-
-  const homeTeam =
-    document.getElementById(
-      "homeTeamInput"
-    ).value;
-
-
-  const mustPick =
-    document.getElementById(
-      "mustPickInput"
-    ).checked;
-
-
-  if (
-    !favorite
-    ||
-    !favoriteSpread
-    ||
-    !underdog
-    ||
-    !underdogSpread
-  ) {
-
-    alert(
-      "Please enter both teams and both spreads."
-    );
-
-    return;
-
-  }
-
-
-  if (mustPick) {
-
-    games.forEach(game => {
-
-      if (game.league === league) {
-
-        game.mustPick = false;
-
-      }
-
-    });
-
-  }
-
-
-  const newGame = {
-
-    id:
-      league.toLowerCase()
-      +
-      "-"
-      +
-      Date.now(),
-
-    league,
-
-    favorite,
-
-    favoriteSpread,
-
-    underdog,
-
-    underdogSpread,
-
-    homeTeam,
-
-    mustPick
-
-  };
-
-
-  games.push(newGame);
-
-/*
-If the newly added game becomes the Must Pick,
-preserve all existing player selections and Key Picks.
-Only update the stored Must Pick status of selections.
-*/
-
-Object.values(selections).forEach(selection => {
-
-  const matchingGame = games.find(
-    game => game.id === selection.gameId
-  );
-
-  if (matchingGame) {
-    selection.mustPick = matchingGame.mustPick;
-  }
-
-});
-
-savePlayerState();
-
-
-  /*
-  Preserve existing player selections even if
-  this newly added game becomes the new Must Pick.
-  The player will simply be required to select
-  the new Must Pick before submitting.
-  */
-
-
-  Object.values(selections)
-    .forEach(selection => {
-
-      const matchingGame =
-        games.find(
-          game =>
-            game.id === selection.gameId
-        );
-
-
-      if (matchingGame) {
-
-        selection.mustPick =
-          matchingGame.mustPick;
-
-      }
-
-    });
-
-
-  saveGames();
-
-  savePlayerState();
-
-  clearGameForm();
-
-  renderAdminGames();
-
-  renderPlayerGames();
-
+async function addGame() {
+  if(!currentWeek){alert("No open week is available.");return;}
+  const league=document.getElementById("leagueInput").value;
+  const favorite=document.getElementById("favoriteInput").value.trim();
+  const favoriteSpread=document.getElementById("favoriteSpreadInput").value.trim();
+  const underdog=document.getElementById("underdogInput").value.trim();
+  const underdogSpread=document.getElementById("underdogSpreadInput").value.trim();
+  const homeTeam=document.getElementById("homeTeamInput").value;
+  const mustPick=document.getElementById("mustPickInput").checked;
+  if(!favorite||!favoriteSpread||!underdog||!underdogSpread){alert("Please enter both teams and both spreads.");return;}
+  if(mustPick){const r=await supabaseClient.from("games").update({must_pick:false}).eq("week_id",currentWeek.id).eq("league",league);if(r.error){alert("Could not update Must Pick: "+r.error.message);return;}}
+  const { error }=await supabaseClient.from("games").insert({week_id:currentWeek.id,league,favorite,favorite_spread:Number(favoriteSpread),underdog,underdog_spread:Number(underdogSpread),home_team:homeTeam,must_pick:mustPick});
+  if(error){alert("Could not add game: "+error.message);return;} clearGameForm(); await loadSharedData();
 }
-
-
 
 function clearGameForm() {
 
@@ -1867,41 +2649,22 @@ function clearGameForm() {
 
 
 
-document
-  .getElementById(
-    "resetSampleButton"
-  )
-  .addEventListener(
-    "click",
-    () => {
+document.getElementById("saveWeekLockButton").addEventListener("click", saveWeekLock);
+document.getElementById("lockWeekNowButton").addEventListener("click", lockWeekNow);
+document.getElementById("clearWeekLockButton").addEventListener("click", clearWeekLock);
 
-      if (
-        confirm(
-          "Restore the sample slate?"
-        )
-      ) {
-
-        games =
-          structuredClone(
-            sampleGames
-          );
-
-        clearPlayerState();
-
-        saveGames();
-
-        renderAdminGames();
-
-        renderPlayerGames();
-
-      }
-
-    }
-  );
-
-
+document.getElementById("resetSampleButton").addEventListener("click", async () => {
+  if(!currentWeek || !confirm("Restore the sample slate?")) return;
+  let r=await supabaseClient.from("games").delete().eq("week_id",currentWeek.id);
+  if(r.error){alert("Could not reset slate: "+r.error.message);return;}
+  const rows=sampleGames.map(g=>({week_id:currentWeek.id,league:g.league,favorite:g.favorite,favorite_spread:Number(g.favoriteSpread),underdog:g.underdog,underdog_spread:Number(g.underdogSpread),home_team:g.homeTeam,must_pick:g.mustPick}));
+  r=await supabaseClient.from("games").insert(rows);
+  if(r.error){alert("Could not restore sample slate: "+r.error.message);return;} clearPlayerState(); await loadSharedData();
+});
 
 /*
+============================================
+TABS/*
 ============================================
 TABS
 ============================================
@@ -1914,6 +2677,12 @@ const playerTab =
   );
 
 
+const standingsTab =
+  document.getElementById(
+    "standingsTab"
+  );
+
+
 const commissionerTab =
   document.getElementById(
     "commissionerTab"
@@ -1923,6 +2692,12 @@ const commissionerTab =
 const playerPanel =
   document.getElementById(
     "playerPanel"
+  );
+
+
+const standingsPanel =
+  document.getElementById(
+    "standingsPanel"
   );
 
 
@@ -1945,6 +2720,10 @@ playerTab.addEventListener(
       "active"
     );
 
+    standingsTab.classList.remove(
+      "active"
+    );
+
     playerPanel.classList.add(
       "active"
     );
@@ -1953,8 +2732,47 @@ playerTab.addEventListener(
       "active"
     );
 
+    standingsPanel.classList.remove(
+      "active"
+    );
+
 
     renderPlayerGames();
+
+  }
+);
+
+
+
+standingsTab.addEventListener(
+  "click",
+  async () => {
+
+    standingsTab.classList.add(
+      "active"
+    );
+
+    playerTab.classList.remove(
+      "active"
+    );
+
+    commissionerTab.classList.remove(
+      "active"
+    );
+
+    standingsPanel.classList.add(
+      "active"
+    );
+
+    playerPanel.classList.remove(
+      "active"
+    );
+
+    commissionerPanel.classList.remove(
+      "active"
+    );
+
+    await loadStandings();
 
   }
 );
@@ -1973,11 +2791,19 @@ commissionerTab.addEventListener(
       "active"
     );
 
+    standingsTab.classList.remove(
+      "active"
+    );
+
     commissionerPanel.classList.add(
       "active"
     );
 
     playerPanel.classList.remove(
+      "active"
+    );
+
+    standingsPanel.classList.remove(
       "active"
     );
 
@@ -1991,16 +2817,136 @@ commissionerTab.addEventListener(
 
 /*
 ============================================
-START APP
+AUTH + START APP
 ============================================
 */
+function showAuthMessage(message){document.getElementById("authStatus").textContent=message;}
+function updateAuthUi(){
+  const signed=Boolean(currentUser);
+  document.getElementById("loginButton").style.display=signed?"none":"inline-block";
+  document.getElementById("logoutButton").style.display=signed?"inline-block":"none";
+  document.getElementById("emailInput").style.display=signed?"none":"block";
+  document.getElementById("passwordInput").style.display=signed?"none":"block";
+  document.getElementById("standingsTab").style.display=signed?"block":"none";
+  document.getElementById("commissionerTab").style.display=currentProfile?.is_commissioner?"block":"none";
 
+  const poolNameRow=document.getElementById("poolNameRow");
+  const poolNameInput=document.getElementById("poolNameInput");
+  poolNameRow.style.display=signed?"grid":"none";
+  if(signed && poolNameInput){
+    poolNameInput.value=currentProfile?.display_name||"";
+  }
 
-cleanPlayerState();
+  const signedInName=currentProfile?.display_name||currentUser?.email||"Player";
+  showAuthMessage(signed?`Signed in as ${signedInName}${currentProfile?.is_commissioner?" • Commissioner":""}`:"Sign in to load the shared Schriver Pickem slate.");
+  renderWeekLockUi();
+}
+async function loadProfile(){currentProfile=null;if(!currentUser)return;const {data}=await supabaseClient.from("profiles").select("id,display_name,is_commissioner").eq("id",currentUser.id).single();currentProfile=data||null;}
 
-renderPlayerGames();
+async function savePoolName(){
+  if(!currentUser){
+    showAuthMessage("Sign in before choosing a Pool Name.");
+    return;
+  }
 
-renderAdminGames();
+  const input=document.getElementById("poolNameInput");
+  const button=document.getElementById("savePoolNameButton");
+  const displayName=input.value.trim();
+
+  if(displayName.length<2){
+    showAuthMessage("Pool Name must be at least 2 characters.");
+    input.focus();
+    return;
+  }
+
+  if(displayName.length>40){
+    showAuthMessage("Pool Name must be 40 characters or fewer.");
+    input.focus();
+    return;
+  }
+
+  button.disabled=true;
+  button.textContent="Saving...";
+
+  try{
+    const {error}=await supabaseClient
+      .from("profiles")
+      .update({display_name:displayName})
+      .eq("id",currentUser.id);
+
+    if(error){
+      showAuthMessage("Could not save Pool Name: "+error.message);
+      return;
+    }
+
+    await loadProfile();
+    updateAuthUi();
+    await loadStandings();
+    showAuthMessage(`Pool Name saved as ${currentProfile?.display_name||displayName}${currentProfile?.is_commissioner?" • Commissioner":""}.`);
+  }catch(error){
+    showAuthMessage("Could not save Pool Name: "+(error?.message||"Unknown error."));
+  }finally{
+    button.disabled=false;
+    button.textContent="Save Pool Name";
+  }
+}
+async function handleLogin(){
+  const email=document.getElementById("emailInput").value.trim();
+  const password=document.getElementById("passwordInput").value;
+  if(!email||!password){showAuthMessage("Enter your email and password.");return;}
+  showAuthMessage("Signing in...");
+  try {
+    const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+    if(error){showAuthMessage("Sign in failed: "+error.message);return;}
+    currentUser=data.user;
+    await loadProfile();
+    updateAuthUi();
+    await loadSharedData();
+  } catch(error) {
+    showAuthMessage("Sign in failed: "+(error?.message||"Unable to contact Supabase."));
+  }
+}
+async function handleLogout(){
+  await supabaseClient.auth.signOut();
+
+  // Clear only the active in-memory card. The signed-out player's
+  // user/week-specific draft remains saved for that player.
+  selections = {};
+  keyPicks = new Set();
+  currentUser = null;
+  currentProfile = null;
+  games = [];
+  currentWeek = null;
+
+  const savedMessage = document.getElementById("savedMessage");
+  if (savedMessage) savedMessage.style.display = "none";
+
+  updateAuthUi();
+  clearStandings();
+  standingsTab.classList.remove("active");
+  commissionerTab.classList.remove("active");
+  playerTab.classList.add("active");
+  standingsPanel.classList.remove("active");
+  commissionerPanel.classList.remove("active");
+  playerPanel.classList.add("active");
+  renderPlayerGames();
+  renderAdminGames();
+  await renderScore();
+}
+document.getElementById("logoutButton").addEventListener("click",handleLogout);
+document.getElementById("savePoolNameButton").addEventListener("click",savePoolName);
+document.getElementById("poolNameInput").addEventListener("keydown",e=>{if(e.key==="Enter")savePoolName();});
+document.getElementById("passwordInput").addEventListener("keydown",e=>{if(e.key==="Enter")handleLogin();});
+async function startApp(){const {data}=await supabaseClient.auth.getSession();currentUser=data.session?.user||null;await loadProfile();updateAuthUi();await loadSharedData();}
+document.getElementById("jsStatus").textContent = "JavaScript loaded — Sign In button is active.";
+startApp();
+
+setInterval(() => {
+  if (currentUser && currentWeek) {
+    renderWeekLockUi();
+    updateSummary();
+  }
+}, 30000);
 
 </script>
 
