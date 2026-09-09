@@ -495,6 +495,7 @@
       <input id="emailInput" type="email" placeholder="Email">
       <input id="passwordInput" type="password" placeholder="Password">
       <button id="loginButton" type="button" class="primary" onclick="handleLogin()">Sign In</button>
+      <button id="signupButton" type="button" onclick="handleSignup()">Create Account</button>
       <button id="logoutButton" class="secondary" style="display:none;">Sign Out</button>
     </div>
     <div id="authStatus" class="auth-status">Sign in to load the shared Schriver Pickem slate.</div>
@@ -2906,7 +2907,25 @@ async function handleLogin(){
     showAuthMessage("Sign in failed: "+(error?.message||"Unable to contact Supabase."));
   }
 }
-async function handleLogout(){
+async function handleSignup(){
+  const email=document.getElementById("emailInput").value.trim();
+  const password=document.getElementById("passwordInput").value;
+  if(!email||!password){showAuthMessage("Enter your email and password.");return;}
+  showAuthMessage("Creating account...");
+  try {
+    const {data,error}=await supabaseClient.auth.signUp({email,password});
+    if(error){showAuthMessage("Sign up failed: "+error.message);return;}
+    currentUser=data.user;
+    await loadProfile();
+    updateAuthUi();
+    await loadSharedData();
+    showAuthMessage("Account created. You are signed in.");
+  } catch(error) {
+    showAuthMessage("Sign up failed: "+(error?.message||"Unable to contact Supabase."));
+  }
+}
+  
+  async function handleLogout(){
   await supabaseClient.auth.signOut();
 
   // Clear only the active in-memory card. The signed-out player's
