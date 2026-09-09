@@ -1192,6 +1192,44 @@ function createSchriverSupabaseClient(baseUrl, publishableKey) {
         }
       },
 
+      async signUp({ email, password }) {
+  try {
+    const response = await fetch(`${baseUrl}/auth/v1/signup`, {
+      method: "POST",
+      headers: {
+        apikey: publishableKey,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email, password })
+    });
+
+    const result = await readResponse(response);
+    if (result.error) return result;
+
+    const payload = result.data || {};
+    const session = payload.access_token ? {
+      access_token: payload.access_token,
+      refresh_token: payload.refresh_token,
+      expires_in: payload.expires_in,
+      expires_at: Math.floor(Date.now() / 1000) + (payload.expires_in || 3600),
+      token_type: payload.token_type,
+      user: payload.user
+    } : null;
+
+    if (session) saveSession(session);
+
+    return {
+      data: { user: payload.user || null, session },
+      error: null
+    };
+  } catch (error) {
+    return {
+      data: null,
+      error: { message: error?.message || "Network request failed." }
+    };
+  }
+},
+      
       async signOut() {
         const session = loadSession();
         try {
